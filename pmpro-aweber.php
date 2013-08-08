@@ -3,7 +3,7 @@
 Plugin Name: PMPro AWeber Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-aweber/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: .3.1
+Version: .2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -52,8 +52,7 @@ function pmproaw_wp()
 	if(!empty($post->post_content) && strpos($post->post_content, "[pmpro_checkout]") !== false)
 	{
 		remove_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level");
-		add_action("pmpro_after_checkout", "pmproaw_pmpro_after_checkout", 15);
-		
+		add_action("pmpro_after_checkout", "pmproaw_pmpro_after_checkout", 15);	
 	}
 }
 add_action("wp", "pmproaw_wp", 0);
@@ -144,9 +143,9 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 
 					//find subscriber
 					$subscribers = $aw_list->subscribers;
-					$params = array('status' => 'subscribed');
+					$params = array('email' => $list_user->user_email);
 					$found_subscribers = $subscribers->find($params);
-					
+										
 					//unsubscribe
 					foreach($found_subscribers as $subscriber)
 					{
@@ -194,9 +193,9 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 
 					//find subscriber
 					$subscribers = $aw_list->subscribers;
-					$params = array('status' => 'subscribed');
+					$params = array('email' => $list_user->user_email);
 					$found_subscribers = $subscribers->find($params);
-					
+										
 					//unsubscribe
 					foreach($found_subscribers as $subscriber)
 					{
@@ -230,13 +229,13 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 
 						//find subscriber
 						$subscribers = $aw_list->subscribers;
-						
-						$params = array('status' => 'subscribed');
+												
+						$params = array('email' => $list_user->user_email);
 						$found_subscribers = $subscribers->find($params);
-						
+												
 						//unsubscribe
 						foreach($found_subscribers as $subscriber)
-						{
+						{							
 							$subscriber->status = 'unsubscribed';
 							$subscriber->save();							
 						}
