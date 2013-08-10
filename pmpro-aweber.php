@@ -40,7 +40,7 @@ function pmproaw_init()
 		add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
 	}
 }
-add_action("init", "pmproaw_init", 0);
+add_action("init", "pmproaw_init", 30);
 
 //use a different action if we are on the checkout page
 function pmproaw_wp()
