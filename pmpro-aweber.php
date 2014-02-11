@@ -12,6 +12,10 @@ Author URI: http://www.strangerstudios.com
 	GPLv2 Full license details in license.txt
 */
 
+/*
+	These keys are for the PMPro-AWeber App.
+	Your user keys should be entered on the settings page at Settings --> PMPro AWeber in your WP dashboard.
+*/
 define('PMPROAW_APPID', '7f549046');
 define('PMPROAW_CONSUMER_KEY', 'AkQDSzyNCyG8jh7Or54YfYBh');
 define('PMPROAW_CONSUMER_SECRET', 'Osx8rC1PjATtpEAxjbsw7fcWx1QqhdscsZKCgffm');
@@ -88,7 +92,8 @@ function pmproaw_user_register($user_id)
 				$subscribers = $list->subscribers;
 				$new_subscriber = $subscribers->create(array(
 					'email' => $list_user->user_email,
-					'name' => trim($list_user->first_name . " " . $list_user->last_name)
+					'name' => trim($list_user->first_name . " " . $list_user->last_name),
+					'custom_fields' => apply_filters("pmpro_aweber_custom_fields", array(), $list_user)
 				));					
 			}
 		}
@@ -128,7 +133,8 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				$subscribers = $list->subscribers;
 				$new_subscriber = $subscribers->create(array(
 					'email' => $list_user->user_email,
-					'name' => trim($list_user->first_name . " " . $list_user->last_name)
+					'name' => trim($list_user->first_name . " " . $list_user->last_name),
+					'custom_fields' => apply_filters("pmpro_aweber_custom_fields", array(), $list_user)
 				));			
 			}
 		
@@ -180,7 +186,8 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 					$subscribers = $list->subscribers;
 					$new_subscriber = $subscribers->create(array(
 						'email' => $list_user->user_email,
-						'name' => trim($list_user->first_name . " " . $list_user->last_name)
+						'name' => trim($list_user->first_name . " " . $list_user->last_name),
+						'custom_fields' => apply_filters("pmpro_aweber_custom_fields", array(), $list_user)
 					));			
 				}
 				
@@ -587,7 +594,7 @@ function pmproaw_options_page()
 			foreach ( $pmproaw_lists as $list ) {
 				$all_lists[$i]['id'] = $list['id'];				
 				$all_lists[$i]['account_id'] = $account->id;
-				$all_lists[$i][$i]['name'] = $list['name'];
+				$all_lists[$i]['name'] = $list['name'];
 				$i++;
 			}
 			
