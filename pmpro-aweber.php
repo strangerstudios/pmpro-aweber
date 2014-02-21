@@ -23,8 +23,8 @@ define('PMPROAW_CONSUMER_SECRET', 'Osx8rC1PjATtpEAxjbsw7fcWx1QqhdscsZKCgffm');
 //init
 function pmproaw_init()
 {
-	//include MCAPI Class if we don't have it already
-	if(!class_exists("MCAPI"))
+	//include AWeberAPI Class if we don't have it already
+	if(!class_exists("AWeberAPI"))
 	{
 		require_once(dirname(__FILE__) . "/includes/aweber_api/aweber_api.php");
 	}
@@ -89,25 +89,24 @@ function pmproaw_user_register($user_id)
 				//subscribe them
 				$listURL = "/accounts/{$account->id}/lists/{$list_id}";
 				$list = $account->loadFromUrl($listURL);
-				$subscribers = $list->subscribers;
-				
-		                if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
-		                    $new_subscriber = $subscribers->create(array(
-		                        'email' => $list_user->user_email,
-		                        'name' => trim($list_user->first_name . " " . $list_user->last_name)
-		                    ));
-		                }
-		                else {
-		                    $new_subscriber = $subscribers->create(array(
-		                        'email' => $list_user->user_email,
-		                        'name' => trim($list_user->first_name . " " . $list_user->last_name),
-		                        'custom_fields' => $custom_fields
-		                    ));
-		                }					
+				$subscribers = $list->subscribers;				
+				if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
+					$new_subscriber = $subscribers->create(array(
+						'email' => $list_user->user_email,
+						'name' => trim($list_user->first_name . " " . $list_user->last_name)
+					));
+				}
+				else {
+					$new_subscriber = $subscribers->create(array(
+						'email' => $list_user->user_email,
+						'name' => trim($list_user->first_name . " " . $list_user->last_name),
+						'custom_fields' => $custom_fields
+					));
+				}					
 			}
 		}
 		catch(AWeberAPIException $exc) {
-			//just catching errors so users don't see them
+			//just catching errors so users don't see them			
 		}
 	}
 }
@@ -139,12 +138,20 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				//subscribe them
 				$listURL = "/accounts/{$account->id}/lists/{$list_id}";
 				$list = $account->loadFromUrl($listURL);
-				$subscribers = $list->subscribers;
-				$new_subscriber = $subscribers->create(array(
-					'email' => $list_user->user_email,
-					'name' => trim($list_user->first_name . " " . $list_user->last_name),
-					'custom_fields' => apply_filters("pmpro_aweber_custom_fields", array(), $list_user)
-				));			
+				$subscribers = $list->subscribers;				
+				if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
+					$new_subscriber = $subscribers->create(array(
+						'email' => $list_user->user_email,
+						'name' => trim($list_user->first_name . " " . $list_user->last_name)
+					));
+				}
+				else {
+					$new_subscriber = $subscribers->create(array(
+						'email' => $list_user->user_email,
+						'name' => trim($list_user->first_name . " " . $list_user->last_name),
+						'custom_fields' => $custom_fields
+					));
+				}								
 			}
 		
 			//unsubscribe them from lists not selected
@@ -171,7 +178,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 			}
 		}
 		catch(AWeberAPIException $exc) {
-			//just catching errors so users don't see them
+			//just catching errors so users don't see them			
 		}
 	}
 	elseif(!empty($options['access_key']) && !empty($options['access_secret']))
@@ -193,11 +200,19 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 					$listURL = "/accounts/{$account->id}/lists/{$list_id}";
 					$list = $account->loadFromUrl($listURL);
 					$subscribers = $list->subscribers;
-					$new_subscriber = $subscribers->create(array(
-						'email' => $list_user->user_email,
-						'name' => trim($list_user->first_name . " " . $list_user->last_name),
-						'custom_fields' => apply_filters("pmpro_aweber_custom_fields", array(), $list_user)
-					));			
+					if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
+						$new_subscriber = $subscribers->create(array(
+							'email' => $list_user->user_email,
+							'name' => trim($list_user->first_name . " " . $list_user->last_name)
+						));
+					}
+					else {
+						$new_subscriber = $subscribers->create(array(
+							'email' => $list_user->user_email,
+							'name' => trim($list_user->first_name . " " . $list_user->last_name),
+							'custom_fields' => $custom_fields
+						));
+					}					
 				}
 				
 				//unsubscribe from any list not assigned to users
@@ -221,7 +236,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				}
 			}
 			catch(AWeberAPIException $exc) {
-				//just catching errors so users don't see them
+				//just catching errors so users don't see them				
 			}
 		}
 		else
@@ -258,7 +273,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 					}
 				}
 				catch(AWeberAPIException $exc) {
-					//just catching errors to hide them from users
+					//just catching errors to hide them from users					
 				}
 			}
 		}

@@ -1,9 +1,9 @@
 === PMPro AWeber ===
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
-Requires at least: 3.1
-Tested up to: 3.6
-Stable tag: .3
+Requires at least: 3.4
+Tested up to: 3.8.1
+Stable tag: .4
 
 Sync your WordPress users and members with AWeber lists.
 
@@ -33,6 +33,10 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= .4 =
+* Fixed bug introduced in .3 where you had to set something in the pmpro_aweber_custom_fields filter or subscribers weren't being added.
+* Fixed bug where we were checking for the MCAPI class instead of the AWeberAPI class. (Thanks, pabbate22 and ppcuban on GitHub)
+
 = .3 =
 * Added "pmpro_aweber_custom_fields" filter. Example: https://gist.github.com/strangerstudios/8931605
 
