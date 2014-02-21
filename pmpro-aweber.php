@@ -90,11 +90,20 @@ function pmproaw_user_register($user_id)
 				$listURL = "/accounts/{$account->id}/lists/{$list_id}";
 				$list = $account->loadFromUrl($listURL);
 				$subscribers = $list->subscribers;
-				$new_subscriber = $subscribers->create(array(
-					'email' => $list_user->user_email,
-					'name' => trim($list_user->first_name . " " . $list_user->last_name),
-					'custom_fields' => apply_filters("pmpro_aweber_custom_fields", array(), $list_user)
-				));					
+				
+		                if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
+		                    $new_subscriber = $subscribers->create(array(
+		                        'email' => $list_user->user_email,
+		                        'name' => trim($list_user->first_name . " " . $list_user->last_name)
+		                    ));
+		                }
+		                else {
+		                    $new_subscriber = $subscribers->create(array(
+		                        'email' => $list_user->user_email,
+		                        'name' => trim($list_user->first_name . " " . $list_user->last_name),
+		                        'custom_fields' => $custom_fields
+		                    ));
+		                }					
 			}
 		}
 		catch(AWeberAPIException $exc) {
