@@ -3,7 +3,7 @@
 Plugin Name: PMPro AWeber Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-aweber/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: .4
+Version: .4.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -197,7 +197,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				foreach($options['users_lists'] as $list)
 				{					
 					//subscribe them
-					$listURL = "/accounts/{$account->id}/lists/{$list_id}";
+					$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
 					$list = $account->loadFromUrl($listURL);
 					$subscribers = $list->subscribers;
 					if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
