@@ -33,6 +33,9 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= 1.0 =
+* Released to WordPress repository.
+
 = .4.1 =
 * Fixed bug that occurred when deleting users. FYI, deleted users are added to any All Users lists per the PMPro AWeber settings, since they have any membership level removed first before they are deleted. We may change this behavior in the future.
 

@@ -3,7 +3,7 @@
 Plugin Name: PMPro AWeber Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-aweber/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: .4.1
+Version: 1.0
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -646,7 +646,7 @@ function pmproaw_options_page()
 		
 		<p>This plugin will integrate your site with AWeber. You can choose one or more AWeber lists to have users subscribed to when they signup for your site.</p>
 		<p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can also choose one or more AWeber lists to have members subscribed to for each membership level.</p>
-		<p>Don't have a AWeber account? <a href="http://www.aweber.com/?422729 " target="_blank">Get one here</a>.</p>
+		<p>Don't have a AWeber account? <a href="http://www.aweber.com/?422729" target="_blank">Get one here</a>.</p>
 		
 		<?php
 			if(empty($authorization_code))
