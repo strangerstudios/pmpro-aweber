@@ -1,20 +1,17 @@
-=== PMPro AWeber ===
+=== Paid Memberships Pro - AWeber Add On ===
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 3.4
-Tested up to: 3.8.1
-Stable tag: 1.0
+Tested up to: 4.1.1
+Stable tag: 1.0.1
 
 Sync your WordPress users and members with AWeber lists.
-
-If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more lists.
 
 == Description ==
 
 Sync your WordPress users and members with AWeber lists.
 
 If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more lists.
-
 
 == Installation ==
 
@@ -32,7 +29,15 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
+== Screenshots ==
+
+1. General settings for all members/subscribers list.
+2. Membership-level specific list subscription settings.
+
 == Changelog ==
+= 1.0.1 =
+* Updates to name, description, tags. Added link to support and settings on plugins page.
+
 = 1.0 =
 * Released to WordPress repository.
 
