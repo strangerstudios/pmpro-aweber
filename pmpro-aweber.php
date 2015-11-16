@@ -55,7 +55,7 @@ function pmproaw_wp()
 	global $post;
 	if(!empty($post->post_content) && strpos($post->post_content, "[pmpro_checkout]") !== false)
 	{
-		remove_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level");
+		remove_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15);
 		add_action("pmpro_after_checkout", "pmproaw_pmpro_after_checkout", 15);	
 	}
 }
