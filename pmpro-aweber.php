@@ -38,13 +38,11 @@ function pmproaw_init()
 	
 	//setup hooks for PMPro levels
 	pmproaw_getPMProLevels();
-	global $pmproaw_levels, $aweber;
+	global $pmproaw_levels, $aweber, $account;
 	if(!empty($pmproaw_levels))
 	{		
 		add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
 	}
-	
-	global $aweber, $account;
 	
 	$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
 	$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
