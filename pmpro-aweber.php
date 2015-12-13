@@ -38,11 +38,14 @@ function pmproaw_init()
 	
 	//setup hooks for PMPro levels
 	pmproaw_getPMProLevels();
-	global $pmproaw_levels;
+	global $pmproaw_levels, $aweber, $account;
 	if(!empty($pmproaw_levels))
 	{		
 		add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
 	}
+	
+	$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
+	$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
 }
 add_action("init", "pmproaw_init", 30);
 
@@ -55,7 +58,7 @@ function pmproaw_wp()
 	global $post;
 	if(!empty($post->post_content) && strpos($post->post_content, "[pmpro_checkout]") !== false)
 	{
-		remove_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level");
+		remove_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15);
 		add_action("pmpro_after_checkout", "pmproaw_pmpro_after_checkout", 15);	
 	}
 }
@@ -82,27 +85,10 @@ function pmproaw_user_register($user_id)
 		
 		//subscribe to each list
 		try {
-			$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-			$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
+
 			foreach($options['users_lists'] as $list_id)
-			{					
-				//subscribe them
-				$listURL = "/accounts/{$account->id}/lists/{$list_id}";
-				$list = $account->loadFromUrl($listURL);
-				$subscribers = $list->subscribers;				
-				if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
-					$new_subscriber = $subscribers->create(array(
-						'email' => $list_user->user_email,
-						'name' => trim($list_user->first_name . " " . $list_user->last_name)
-					));
-				}
-				else {
-					$new_subscriber = $subscribers->create(array(
-						'email' => $list_user->user_email,
-						'name' => trim($list_user->first_name . " " . $list_user->last_name),
-						'custom_fields' => $custom_fields
-					));
-				}					
+			{	
+				pmproaw_subscribe($list_id, $list_user);				
 			}
 		}
 		catch(AWeberAPIException $exc) {
@@ -128,51 +114,56 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 		
 		//subscribe to each list
 		try {		
-			$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-			$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
 			
 			foreach($options['level_' . $level_id . '_lists'] as $list_id)
 			{					
 				//echo "<hr />Trying to subscribe to " . $list_id . "...";
-				
-				//subscribe them
-				$listURL = "/accounts/{$account->id}/lists/{$list_id}";
-				$list = $account->loadFromUrl($listURL);
-				$subscribers = $list->subscribers;				
-				if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
-					$new_subscriber = $subscribers->create(array(
-						'email' => $list_user->user_email,
-						'name' => trim($list_user->first_name . " " . $list_user->last_name)
-					));
-				}
-				else {
-					$new_subscriber = $subscribers->create(array(
-						'email' => $list_user->user_email,
-						'name' => trim($list_user->first_name . " " . $list_user->last_name),
-						'custom_fields' => $custom_fields
-					));
-				}								
+				pmproaw_subscribe($list_id, $list_user);							
 			}
-		
-			//unsubscribe them from lists not selected
+			
 			foreach($all_lists as $list)
 			{
-				if(!in_array($list['id'], $options['level_' . $level_id . '_lists']))
+				//Unsubscribe set to "No"
+				if(!$options['unsubscribe'])
+					return;
+				
+				//Unsubscribe set to "Yes"
+				if($options['unsubscribe'] == "all")
 				{
-					//get list
-					$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
-					$aw_list = $account->loadFromUrl($listURL);
-
-					//find subscriber
-					$subscribers = $aw_list->subscribers;
-					$params = array('email' => $list_user->user_email);
-					$found_subscribers = $subscribers->find($params);
-										
-					//unsubscribe
-					foreach($found_subscribers as $subscriber)
+					if(!in_array($list['id'], $options['level_' . $level_id . '_lists']))
 					{
-						$subscriber->status = 'unsubscribed';
-						$subscriber->save();
+						pmproaw_unsubscribe($list, $list_user);
+					}
+				}
+				
+				//Unsubscribe set to "Yes (Old Level Lists Only)
+				else
+				{
+					//get their prevous level lists
+					global $wpdb;
+					
+					if($level_id)
+						$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
+					
+					else
+						$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1");
+		
+					if($last_level)
+					{			
+						$last_level_id = $last_level[0]->membership_id;
+						
+						if(!empty($options['level_'.$last_level_id.'_lists']))
+							$old_level_lists = $options['level_'.$last_level_id.'_lists'];
+						else
+							$old_level_lists = array();
+					}
+					else
+						$old_level_lists = array();
+					
+					//if we find this list id in thier old level, then unsubscribe
+					if(in_array($list['id'], $old_level_lists))
+					{
+						pmproaw_unsubscribe($list, $list_user);
 					}
 				}
 			}
@@ -191,48 +182,16 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 			
 			//subscribe to each list
 			try {
-				$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-				$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
-				
+
 				foreach($options['users_lists'] as $list)
 				{					
-					//subscribe them
-					$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
-					$list = $account->loadFromUrl($listURL);
-					$subscribers = $list->subscribers;
-					if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user)) {
-						$new_subscriber = $subscribers->create(array(
-							'email' => $list_user->user_email,
-							'name' => trim($list_user->first_name . " " . $list_user->last_name)
-						));
-					}
-					else {
-						$new_subscriber = $subscribers->create(array(
-							'email' => $list_user->user_email,
-							'name' => trim($list_user->first_name . " " . $list_user->last_name),
-							'custom_fields' => $custom_fields
-						));
-					}					
+					pmproaw_subscribe($list['id'], $list_user);		
 				}
 				
 				//unsubscribe from any list not assigned to users
 				foreach($all_lists as $list)
 				{
-					//get list
-					$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
-					$aw_list = $account->loadFromUrl($listURL);
-
-					//find subscriber
-					$subscribers = $aw_list->subscribers;
-					$params = array('email' => $list_user->user_email);
-					$found_subscribers = $subscribers->find($params);
-										
-					//unsubscribe
-					foreach($found_subscribers as $subscriber)
-					{
-						$subscriber->status = 'unsubscribed';
-						$subscriber->save();
-					}
+					pmproaw_unsubscribe($list, $list_user);
 				}
 			}
 			catch(AWeberAPIException $exc) {
@@ -249,27 +208,10 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				
 				//unsubscribe to each list
 				try {
-					$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-					$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
 				
 					foreach($all_lists as $list)
 					{
-						//get list
-						$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
-						$aw_list = $account->loadFromUrl($listURL);
-
-						//find subscriber
-						$subscribers = $aw_list->subscribers;
-												
-						$params = array('email' => $list_user->user_email);
-						$found_subscribers = $subscribers->find($params);
-												
-						//unsubscribe
-						foreach($found_subscribers as $subscriber)
-						{							
-							$subscriber->status = 'unsubscribed';
-							$subscriber->save();							
-						}
+						pmproaw_unsubscribe($list, $list_user);
 					}
 				}
 				catch(AWeberAPIException $exc) {
@@ -280,40 +222,87 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 	}
 }
 
+function pmproaw_unsubscribe($list, $list_user)
+{
+	global $account;
+	
+	//get list
+	$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
+	$aw_list = $account->loadFromUrl($listURL);
+
+	//find subscriber
+	$subscribers = $aw_list->subscribers;							
+	$params = array('email' => $list_user->user_email);
+	$found_subscribers = $subscribers->find($params);
+												
+	//unsubscribe
+	foreach($found_subscribers as $subscriber)
+	{							
+		$subscriber->status = 'unsubscribed';
+		$subscriber->save();							
+	}
+}
+
+function pmproaw_subscribe($list_id, $list_user)
+{
+	global $account;
+	
+	$listURL = "/accounts/{$account->id}/lists/{$list_id}";
+	$list = $account->loadFromUrl($listURL);
+	$subscribers = $list->subscribers;
+	if (!$custom_fields = apply_filters("pmpro_aweber_custom_fields", array(), $list_user))
+	{
+		$new_subscriber = $subscribers->create(array(
+				'email' => $list_user->user_email,
+				'name' => trim($list_user->first_name . " " . $list_user->last_name)));
+	}
+	
+	else
+	{
+		$new_subscriber = $subscribers->create(array(
+				'email' => $list_user->user_email,
+				'name' => trim($list_user->first_name . " " . $list_user->last_name),
+				'custom_fields' => $custom_fields));
+	}
+}
+
 //change email in AWeber if a user's email is changed in WordPress
 function pmproaw_profile_update($user_id, $old_user_data)
 {
+	global $account;
+	
 	$new_user_data = get_userdata($user_id);
 	if($new_user_data->user_email != $old_user_data->user_email)
 	{			
-		//get all lists
-		$options = get_option("pmproaw_options");
+		try {
+			//get all lists
+			$pmproaw_lists = $account->lists->data['entries'];
 		
-		$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-		$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
-		$pmproaw_lists = $account->lists->data['entries'];
-		
-		if(!empty($pmproaw_lists))
-		{
-			foreach($pmproaw_lists as $list)
+			if(!empty($pmproaw_lists))
 			{
-				//get list
-				$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
-				$aw_list = $account->loadFromUrl($listURL);
-
-				//find subscriber
-				$subscribers = $aw_list->subscribers;
-				
-				$params = array('status' => 'subscribed');
-				$found_subscribers = $subscribers->find($params);
-				
-				//change email
-				foreach($found_subscribers as $subscriber)
+				foreach($pmproaw_lists as $list)
 				{
-					$subscriber->email = $new_user_data->user_email;
-					$subscriber->save();							
+					//get list
+					$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
+					$aw_list = $account->loadFromUrl($listURL);
+
+					//find subscriber
+					$subscribers = $aw_list->subscribers;
+				
+					$params = array('status' => 'subscribed');
+					$found_subscribers = $subscribers->find($params);
+				
+					//change email
+					foreach($found_subscribers as $subscriber)
+					{
+						$subscriber->email = $new_user_data->user_email;
+						$subscriber->save();							
+					}
 				}
 			}
+		}
+		catch(AWeberAPIException $exc) {
+			//just catching errors to hide them from users					
 		}
 	}
 }
@@ -330,7 +319,8 @@ function pmproaw_admin_init()
 	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_users_lists', 'All Users List', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
 	//add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
-	
+	add_settings_field('pmproaw_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
+
 	//pmpro-related options	
 	add_settings_section('pmproaw_section_levels', 'Membership Levels and Lists', 'pmproaw_section_levels', 'pmproaw_options');		
 	
@@ -517,6 +507,8 @@ function pmproaw_options_validate($input)
 	$newinput['access_secret'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['access_secret']));
 	$newinput['double_opt_in'] = intval($input['double_opt_in']);
 	
+	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
+	
 	//user lists
 	if(!empty($input['users_lists']) && is_array($input['users_lists']))
 	{
@@ -569,14 +561,14 @@ add_action("init", "pmproaw_init_oauth");
 //html for options page
 function pmproaw_options_page()
 {
-	global $pmproaw_lists;
+	global $pmproaw_lists, $aweber, $account;
 	
 	//check for a valid API key and get lists
 	$options = get_option("pmproaw_options");	
 	$authorization_code = $options['authorization_code'];
 	$access_key = $options['access_key'];
 	$access_secret = $options['access_secret'];
-	
+		
 	//get token if needed
 	if(!empty($authorization_code) && (empty($access_key) || empty($access_secret)))
 	{
@@ -592,6 +584,7 @@ function pmproaw_options_page()
 			$options['access_key'] = $access_key;
 			$access_secret = $accessSecret;
 			$options['access_secret'] = $access_secret;
+			
 			update_option('pmproaw_options', $options);
 		}
 		catch(AWeberAPIException $exc) {
@@ -606,10 +599,9 @@ function pmproaw_options_page()
 	//get lists
 	if(!empty($access_key) && !empty($access_secret))
 	{
-		$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
+	//	$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
 		
 		try {
-			$account = $aweber->getAccount($access_key, $access_secret);
 			$pmproaw_lists = $account->lists->data['entries'];
 			$all_lists = array();
 						
@@ -633,6 +625,8 @@ function pmproaw_options_page()
 			print "<hr>";
 		}
 	}
+	
+
 ?>
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"><br></div>
@@ -699,3 +693,17 @@ function pmproaw_plugin_row_meta($links, $file) {
 	return $links;
 }
 add_filter('plugin_row_meta', 'pmproaw_plugin_row_meta', 10, 2);
+
+function pmproaw_option_unsubscribe()
+{
+	$options = get_option('pmproaw_options');
+
+	?>
+	<select name="pmproaw_options[unsubscribe]">
+		<option value="0" <?php selected($options['unsubscribe'], 0);?>>No</option>
+		<option value="1" <?php selected($options['unsubscribe'], 1);?>>Yes (Only old level lists.)</option>
+		<option value="all" <?php selected($options['unsubscribe'], "all");?>>Yes (All other lists.)</option>
+	</select>
+	<small>Recommended: Yes. However, if you manage multiple lists in Aweber and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.</small>
+	<?php
+}
