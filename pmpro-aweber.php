@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - AWeber Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-aweber/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: 1.0.1
+Version: 1.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -31,6 +31,15 @@ function pmproaw_init()
 	
 	//get options for below
 	$options = get_option("pmproaw_options");
+	
+	//default new unsubscribe option to 'Yes (Only old lists.)'
+	if(empty($options)) {
+		$options = array('unsubscribe'=>'1');
+		update_option('pmproaw_options', $options);
+	} elseif(!isset($options['unsubscribe'])) {
+		$options['unsubscribe'] = 1;
+		update_option('pmproaw_options', $options);
+	}
 	
 	//setup hooks for new users	
 	if(!empty($options['users_lists']))
@@ -696,8 +705,7 @@ add_filter('plugin_row_meta', 'pmproaw_plugin_row_meta', 10, 2);
 
 function pmproaw_option_unsubscribe()
 {
-	$options = get_option('pmproaw_options');
-
+	$options = get_option('pmproaw_options');	
 	?>
 	<select name="pmproaw_options[unsubscribe]">
 		<option value="0" <?php selected($options['unsubscribe'], 0);?>>No</option>
