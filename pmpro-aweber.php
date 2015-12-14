@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - AWeber Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-aweber/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: 1.1
+Version: 1.1.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -47,14 +47,11 @@ function pmproaw_init()
 	
 	//setup hooks for PMPro levels
 	pmproaw_getPMProLevels();
-	global $pmproaw_levels, $aweber, $account;
+	global $pmproaw_levels;
 	if(!empty($pmproaw_levels))
 	{		
 		add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
-	}
-	
-	$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-	$account = $aweber->getAccount($options['access_key'], $options['access_secret']);
+	}		
 }
 add_action("init", "pmproaw_init", 30);
 
@@ -72,6 +69,33 @@ function pmproaw_wp()
 	}
 }
 add_action("wp", "pmproaw_wp", 0);
+
+/*
+	Load the AWeber API
+*/
+function pmproaw_getAccount($force = false)
+{
+	global $pmproaw_aweber_api, $pmproaw_aweber_account;	
+	
+	if(empty($force) && !empty($pmproaw_aweber_account)) {		
+		$options = get_option("pmproaw_options");
+		
+		if(empty($options['access_key']) || empty($options['access_secret']))
+			return false;
+		
+		try {
+			$pmproaw_aweber_api = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
+			$pmproaw_aweber_account = $pmproaw_aweber_api->getAccount($options['access_key'], $options['access_secret']);
+		} catch(AWeberAPIException $exc) {			
+			global $pmproaw_exception;
+			$pmproaw_exception = $exc;				
+			
+			return false;
+		}
+	}
+	
+	return $pmproaw_aweber_account;
+}
 
 //for when checking out
 function pmproaw_pmpro_after_checkout($user_id)
@@ -232,8 +256,11 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 }
 
 function pmproaw_unsubscribe($list, $list_user)
-{
-	global $account;
+{	
+	//get aweber account or fail
+	$account = pmproaw_getAccount();	
+	if(empty($account))
+		return;
 	
 	//get list
 	$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
@@ -254,7 +281,10 @@ function pmproaw_unsubscribe($list, $list_user)
 
 function pmproaw_subscribe($list_id, $list_user)
 {
-	global $account;
+	//get aweber account or fail
+	$account = pmproaw_getAccount();	
+	if(empty($account))
+		return;
 	
 	$listURL = "/accounts/{$account->id}/lists/{$list_id}";
 	$list = $account->loadFromUrl($listURL);
@@ -278,7 +308,10 @@ function pmproaw_subscribe($list_id, $list_user)
 //change email in AWeber if a user's email is changed in WordPress
 function pmproaw_profile_update($user_id, $old_user_data)
 {
-	global $account;
+	//get aweber account or fail
+	$account = pmproaw_getAccount();	
+	if(empty($account))
+		return;
 	
 	$new_user_data = get_userdata($user_id);
 	if($new_user_data->user_email != $old_user_data->user_email)
@@ -570,7 +603,7 @@ add_action("init", "pmproaw_init_oauth");
 //html for options page
 function pmproaw_options_page()
 {
-	global $pmproaw_lists, $aweber, $account;
+	global $pmproaw_lists;
 	
 	//check for a valid API key and get lists
 	$options = get_option("pmproaw_options");	
@@ -608,30 +641,41 @@ function pmproaw_options_page()
 	//get lists
 	if(!empty($access_key) && !empty($access_secret))
 	{
-	//	$aweber = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
-		
-		try {
-			$pmproaw_lists = $account->lists->data['entries'];
-			$all_lists = array();
-						
-			//save all lists in an option
-			$i = 0;	
-			foreach ( $pmproaw_lists as $list ) {
-				$all_lists[$i]['id'] = $list['id'];				
-				$all_lists[$i]['account_id'] = $account->id;
-				$all_lists[$i]['name'] = $list['name'];
-				$i++;
+		//get aweber account or fail
+		$account = pmproaw_getAccount();	
+		if(!empty($account)) {
+			try {
+				$pmproaw_lists = $account->lists->data['entries'];
+				$all_lists = array();
+							
+				//save all lists in an option
+				$i = 0;	
+				foreach ( $pmproaw_lists as $list ) {
+					$all_lists[$i]['id'] = $list['id'];				
+					$all_lists[$i]['account_id'] = $account->id;
+					$all_lists[$i]['name'] = $list['name'];
+					$i++;
+				}
+				
+				/** Save all of our new data */
+				update_option( "pmproaw_all_lists", $all_lists);
+				
+			} catch(AWeberAPIException $exc) {
+				print "<h3>AWeberAPIException:</h3>";
+				print " <li> Type: $exc->type              <br>";
+				print " <li> Msg : $exc->message           <br>";
+				print " <li> Docs: $exc->documentation_url <br>";
+				print "<hr>";
 			}
-			
-			/** Save all of our new data */
-			update_option( "pmproaw_all_lists", $all_lists);
-			
-		} catch(AWeberAPIException $exc) {
-			print "<h3>AWeberAPIException:</h3>";
-			print " <li> Type: $exc->type              <br>";
-			print " <li> Msg : $exc->message           <br>";
-			print " <li> Docs: $exc->documentation_url <br>";
-			print "<hr>";
+		} else {
+			global $pmproaw_exception;
+			if(!empty($pmproaw_exception)) {
+				print "<h3>AWeberAPIException:</h3>";
+				print " <li> Type: $pmproaw_exception->type              <br>";
+				print " <li> Msg : $pmproaw_exception->message           <br>";
+				print " <li> Docs: $pmproaw_exception->documentation_url <br>";
+				print "<hr>";
+			}			
 		}
 	}
 	

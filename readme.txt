@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 3.4
 Tested up to: 4.4
-Stable tag: 1.1
+Stable tag: 1.1.1
 
 Sync your WordPress users and members with AWeber lists.
 
@@ -35,6 +35,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.1.1 =
+* BUG: Wrapping API calls to avoid fatal errors.
+
 = 1.1
 * FEATURE: Added option to the settings page to choose how users are unsubscribed from other lists when changing levels.
 
