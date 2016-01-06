@@ -77,7 +77,7 @@ function pmproaw_getAccount($force = false)
 {
 	global $pmproaw_aweber_api, $pmproaw_aweber_account;	
 	
-	if(empty($force) && !empty($pmproaw_aweber_account)) {		
+	if(empty($force) && empty($pmproaw_aweber_account)) {		
 		$options = get_option("pmproaw_options");
 		
 		if(empty($options['access_key']) || empty($options['access_secret']))
