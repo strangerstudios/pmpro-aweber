@@ -218,7 +218,8 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 
 				foreach($options['users_lists'] as $list)
 				{					
-					pmproaw_subscribe($list['id'], $list_user);		
+					if ( isset($list['id']) )
+						pmproaw_subscribe($list['id'], $list_user);
 				}
 				
 				//unsubscribe from any list not assigned to users
