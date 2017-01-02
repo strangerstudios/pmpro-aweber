@@ -384,7 +384,11 @@ add_action("admin_init", "pmproaw_admin_init");
 function pmproaw_getPMProLevels()
 {	
 	global $pmproaw_levels, $wpdb;
-	$pmproaw_levels = $wpdb->get_results("SELECT * FROM $wpdb->pmpro_membership_levels ORDER BY id");			
+	
+	if ( isset( $wpdb->pmpro_membership_levels ) ) 
+		$pmproaw_levels = $wpdb->get_results("SELECT * FROM $wpdb->pmpro_membership_levels ORDER BY id");			
+	else
+		$pmproaw_levels = array();
 }
 
 //options sections
