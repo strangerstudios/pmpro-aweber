@@ -54,10 +54,14 @@ class AWeberEntry extends AWeberResponse {
      */
     protected function _type() {
         if (empty($this->type)) {
-            $typeLink = $this->data['resource_type_link'];
-            if (empty($typeLink)) return null;
-            list($url, $type) = explode('#', $typeLink);
-            $this->type = $type;
+            if (!empty($this->data['resource_type_link'])) {
+                list($url, $type) = explode('#', $this->data['resource_type_link']);
+                $this->type = $type;
+            } elseif (!empty($this->data['broadcast_id'])) {
+                $this->type = 'broadcast';
+            } else {
+                return null;
+            }
         }
         return $this->type;
     }

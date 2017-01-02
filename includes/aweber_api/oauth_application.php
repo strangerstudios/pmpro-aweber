@@ -1,4 +1,5 @@
 <?php
+if (!class_exists('CurlObject')) require_once('curl_object.php');
 if (!class_exists('CurlResponse')) require_once('curl_response.php');
 
 /**
@@ -65,6 +66,8 @@ class OAuthApplication implements AWeberOAuthAdapter {
     public $signatureMethod = 'HMAC-SHA1';
     public $version         = '1.0';
 
+    public $curl = false;
+
     /**
      * @var OAuthUser User currently interacting with the service provider
      */
@@ -90,6 +93,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
             $this->app = $parentApp;
         }
         $this->user = new OAuthUser();
+        $this->curl = new CurlObject();
     }
 
     /**
@@ -227,7 +231,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
      */
     protected function get($url, $data) {
         $url = $this->_addParametersToUrl($url, $data);
-        $handle = curl_init($url);
+        $handle = $this->curl->init($url);
         $resp = $this->_sendRequest($handle);
         return $resp;
     }
@@ -306,7 +310,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
      * @return void         Encoded data
      */
     protected function encode($data) {
-        return rawurlencode(utf8_encode($data));
+        return rawurlencode($data);
     }
 
     /**
@@ -370,15 +374,17 @@ class OAuthApplication implements AWeberOAuthAdapter {
         $method = $this->encode(strtoupper($method));
         $query = parse_url($url, PHP_URL_QUERY);
         if ($query) {
-            $url = array_shift(explode('?', $url, 2));
+            $parts = explode('?', $url, 2);
+            $url = array_shift($parts);
             $items = explode('&', $query);
             foreach ($items as $item) {
                 list($key, $value) = explode('=', $item);
-                $data[$key] = $value;
+                $data[rawurldecode($key)] = rawurldecode($value);
             }
         }
         $url = $this->encode($url);
         $data = $this->encode($this->collapseDataForSignature($data));
+
         return $method.'&'.$url.'&'.$data;
     }
 
@@ -425,16 +431,17 @@ class OAuthApplication implements AWeberOAuthAdapter {
      * makeRequest
      *
      * Public facing function to make a request
+     * 
      * @param mixed $method
-     * @param mixed $url
-     * @param mixed $data
+     * @param mixed $url  - Reserved characters in query params MUST be escaped
+     * @param mixed $data - Reserved characters in values MUST NOT be escaped
      * @access public
      * @return void
      */
     public function makeRequest($method, $url, $data=array()) {
 
         if ($this->debug) echo "\n** {$method}: $url\n";
-
+        
         switch (strtoupper($method)) {
             case 'POST':
                 $oauth = $this->prepareRequest($method, $url, $data);
@@ -488,14 +495,14 @@ class OAuthApplication implements AWeberOAuthAdapter {
      *
      * @param mixed $url    URL where we are making the request to
      * @param mixed $data   Data that is used to make the request
-     * @access private
+     * @access protected
      * @return void
      */
     protected function patch($url, $oauth, $data) {
         $url = $this->_addParametersToUrl($url, $oauth);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'PATCH');
-        curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($data));
+        $handle = $this->curl->init($url);
+        $this->curl->setopt($handle, CURLOPT_CUSTOMREQUEST, 'PATCH');
+        $this->curl->setopt($handle, CURLOPT_POSTFIELDS, json_encode($data));
         $resp = $this->_sendRequest($handle, array('Expect:', 'Content-Type: application/json'));
         return $resp;
     }
@@ -507,14 +514,14 @@ class OAuthApplication implements AWeberOAuthAdapter {
      *
      * @param mixed $url    URL where we are making the request to
      * @param mixed $data   Data that is used to make the request
-     * @access private
+     * @access protected
      * @return void
      */
     protected function post($url, $oauth) {
-        $handle = curl_init($url);
+        $handle = $this->curl->init($url);
         $postData = $this->buildData($oauth);
-        curl_setopt($handle, CURLOPT_POST, true);
-        curl_setopt($handle, CURLOPT_POSTFIELDS, $postData);
+        $this->curl->setopt($handle, CURLOPT_POST, true);
+        $this->curl->setopt($handle, CURLOPT_POSTFIELDS, $postData);
         $resp = $this->_sendRequest($handle);
         return $resp;
     }
@@ -530,8 +537,8 @@ class OAuthApplication implements AWeberOAuthAdapter {
      */
     protected function delete($url, $data) {
         $url = $this->_addParametersToUrl($url, $data);
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        $handle = $this->curl->init($url);
+        $this->curl->setopt($handle, CURLOPT_CUSTOMREQUEST, 'DELETE');
         $resp = $this->_sendRequest($handle);
         return $resp;
     }
@@ -563,19 +570,20 @@ class OAuthApplication implements AWeberOAuthAdapter {
      * @return void
      */
     private function _sendRequest($handle, $headers = array('Expect:')) {
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_HEADER, true);
-        curl_setopt($handle, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($handle, CURLOPT_USERAGENT, $this->userAgent);
-        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($handle, CURLOPT_VERBOSE, FALSE);
-        curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($handle, CURLOPT_TIMEOUT, 90);
-        $resp = curl_exec($handle);
+        $this->curl->setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $this->curl->setopt($handle, CURLOPT_HEADER, true);
+        $this->curl->setopt($handle, CURLOPT_HTTPHEADER, $headers);
+        $this->curl->setopt($handle, CURLOPT_USERAGENT, $this->userAgent);
+        $this->curl->setopt($handle, CURLOPT_SSL_VERIFYPEER, FALSE);
+        $this->curl->setopt($handle, CURLOPT_VERBOSE, FALSE);
+        $this->curl->setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
+        $this->curl->setopt($handle, CURLOPT_TIMEOUT, 90);
+        $resp = $this->curl->execute($handle);
         if ($resp) {
             return new CurlResponse($resp);
         }
-        $this->error = curl_errno($handle).' - '.curl_error($handle);
+        $this->error = $this->curl->errno($handle) . ' - ' .
+        	$this->curl->error($handle);
         return false;
     }
 
