@@ -218,7 +218,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 
 				foreach($options['users_lists'] as $list)
 				{					
-					if ( isset($list['id']) )
+					if ( is_array($list) && isset($list['id']) )
 						pmproaw_subscribe($list['id'], $list_user);
 				}
 				
