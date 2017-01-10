@@ -220,6 +220,8 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				{					
 					if ( is_array($list) && isset($list['id']) )
 						pmproaw_subscribe($list['id'], $list_user);
+					else
+						pmproaw_subscribe($list, $list_user);
 				}
 				
 				//unsubscribe from any list not assigned to users
@@ -256,15 +258,19 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 	}
 }
 
-function pmproaw_unsubscribe($list, $list_user)
+function pmproaw_unsubscribe($list_id, $list_user)
 {	
+	//accept arrays as well
+	if(is_array($list_id))
+		$list_id = $list_id['id'];
+	
 	//get aweber account or fail
 	$account = pmproaw_getAccount();	
 	if(empty($account))
 		return;
 	
 	//get list
-	$listURL = "/accounts/{$account->id}/lists/{$list['id']}";
+	$listURL = "/accounts/{$account->id}/lists/{$list_id}";
 	$aw_list = $account->loadFromUrl($listURL);
 
 	//find subscriber
@@ -282,6 +288,10 @@ function pmproaw_unsubscribe($list, $list_user)
 
 function pmproaw_subscribe($list_id, $list_user)
 {
+	//accept arrays as well
+	if(is_array($list_id))
+		$list_id = $list_id['id'];
+	
 	//get aweber account or fail
 	$account = pmproaw_getAccount();	
 	if(empty($account))
