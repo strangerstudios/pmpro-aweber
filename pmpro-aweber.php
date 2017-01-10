@@ -358,8 +358,8 @@ function pmproaw_admin_init()
 	register_setting('pmproaw_options', 'pmproaw_options', 'pmproaw_options_validate');	
 	add_settings_section('pmproaw_section_general', 'General Settings', 'pmproaw_section_general', 'pmproaw_options');		
 	add_settings_field('pmproaw_option_authorization_code', 'AWeber Authorization Code', 'pmproaw_option_authorization_code', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
+	//add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
+	//add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_users_lists', 'All Users List', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
 	//add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
 	add_settings_field('pmproaw_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
@@ -448,12 +448,28 @@ function pmproaw_section_levels()
 //options code
 function pmproaw_option_authorization_code()
 {
+	global $pmproaw_exception;
+	
 	$options = get_option('pmproaw_options');		
 	if(isset($options['authorization_code']))
 		$authorization_code = $options['authorization_code'];
 	else
 		$authorization_code = "";
+	
 	echo "<textarea name='pmproaw_options[authorization_code]' cols='60' rows='3'>" . esc_textarea($authorization_code) . "</textarea>";	
+	
+	if(empty($authorization_code)){
+		echo "<div class='updated inline'><p>To get started, you must authorize this website to access your AWeber account.<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>Click here to authorize this site to access your AWeber account</a>.<br />Then copy the 'authorization code' given into the field above and click 'Save Settings' to continue.</p></div>";
+	} elseif(!empty($pmproaw_exception)) {
+		echo "<div class='notice notice-error inline'><p>You must reauthorize the PMPro Aweber App at AWeber.<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>Click here to authorize this site to access your AWeber account</a>.<br />Then copy the new 'authorization code' given and replace it into the field above and click 'Save Settings' to continue.</p></div>";
+	}
+	
+	//show an extra save settings button sometimes
+	if(empty($authorization_code) || !empty($pmproaw_exception)) {
+	?>
+	<input type="submit" name="submit" class="button-primary" value="Save Settings">
+	<?php
+	}
 }
 
 function pmproaw_option_access_key()
@@ -605,6 +621,15 @@ function pmproaw_init_oauth()
 }
 add_action("init", "pmproaw_init_oauth");
 
+//show exception error
+function pmproaw_printAWeberAPIException($exc) {
+	print "<div class='notice notice-error'><h3>AWeberAPIException:</h3>";
+	print " <li> Type: $exc->type              <br>";
+	print " <li> Msg : $exc->message           <br>";
+	print " <li> Docs: $exc->documentation_url <br>";
+	print "</div>";
+}
+
 //html for options page
 function pmproaw_options_page()
 {
@@ -635,11 +660,9 @@ function pmproaw_options_page()
 			update_option('pmproaw_options', $options);
 		}
 		catch(AWeberAPIException $exc) {
-			print "<h3>AWeberAPIException:</h3>";
-			print " <li> Type: $exc->type              <br>";
-			print " <li> Msg : $exc->message           <br>";
-			print " <li> Docs: $exc->documentation_url <br>";
-			print "<hr>";
+			global $pmproaw_exception;
+			$pmproaw_exception = $exc;	
+			pmproaw_printAWeberAPIException($exc);
 		}
 	}
 	
@@ -666,20 +689,14 @@ function pmproaw_options_page()
 				update_option( "pmproaw_all_lists", $all_lists);
 				
 			} catch(AWeberAPIException $exc) {
-				print "<h3>AWeberAPIException:</h3>";
-				print " <li> Type: $exc->type              <br>";
-				print " <li> Msg : $exc->message           <br>";
-				print " <li> Docs: $exc->documentation_url <br>";
-				print "<hr>";
+				global $pmproaw_exception;
+				$pmproaw_exception = $exc;
+				pmproaw_printAWeberAPIException($exc);
 			}
 		} else {
 			global $pmproaw_exception;
 			if(!empty($pmproaw_exception)) {
-				print "<h3>AWeberAPIException:</h3>";
-				print " <li> Type: $pmproaw_exception->type              <br>";
-				print " <li> Msg : $pmproaw_exception->message           <br>";
-				print " <li> Docs: $pmproaw_exception->documentation_url <br>";
-				print "<hr>";
+				pmproaw_printAWeberAPIException($pmproaw_exception);
 			}			
 		}
 	}
@@ -700,14 +717,7 @@ function pmproaw_options_page()
 		<p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can also choose one or more AWeber lists to have members subscribed to for each membership level.</p>
 		<p>Don't have a AWeber account? <a href="http://www.aweber.com/?422729" target="_blank">Get one here</a>.</p>
 		
-		<?php
-			if(empty($authorization_code))
-			{
-			?>
-			<div class="updated"><p>To get started, you must authorize this website to access your AWeber account. <a target="_blank" href="?page=pmproaw_options&oauth=1">Click here to authorize this site to access your AWeber account</a>. Then copy the "authorization code" given into the field below and click "Save Settings" to continue.</p></div>
-			<?php
-			}
-			
+		<?php			
 			settings_fields('pmproaw_options');
 			do_settings_sections('pmproaw_options');			
 		?>
