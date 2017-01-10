@@ -358,8 +358,8 @@ function pmproaw_admin_init()
 	register_setting('pmproaw_options', 'pmproaw_options', 'pmproaw_options_validate');	
 	add_settings_section('pmproaw_section_general', 'General Settings', 'pmproaw_section_general', 'pmproaw_options');		
 	add_settings_field('pmproaw_option_authorization_code', 'AWeber Authorization Code', 'pmproaw_option_authorization_code', 'pmproaw_options', 'pmproaw_section_general');		
-	//add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
-	//add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_users_lists', 'All Users List', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
 	//add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
 	add_settings_field('pmproaw_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
@@ -479,7 +479,15 @@ function pmproaw_option_access_key()
 		$access_key = $options['access_key'];
 	else
 		$access_key = "";
-	echo "<input id='pmproaw_access_key' name='pmproaw_options[access_key]' size='80' type='text' value='" . esc_attr($access_key) . "' />";
+	
+	?>
+	<input id='pmproaw_access_key' name='pmproaw_options[access_key]' size='80' type='text' value='<?php echo esc_attr($access_key); ?>' readonly='readonly'/>
+	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<script>
+		//hide this row in the table
+		jQuery('#pmproaw_access_key').closest('tr').hide();
+	</script>
+	<?php
 }
 
 function pmproaw_option_access_secret()
@@ -489,7 +497,15 @@ function pmproaw_option_access_secret()
 		$access_secret = $options['access_secret'];
 	else
 		$access_secret = "";
-	echo "<input id='pmproaw_consumer_secret' name='pmproaw_options[access_secret]' size='80' type='text' value='" . esc_attr($access_secret) . "' />";
+	
+	?>
+	<input id='pmproaw_consumer_secret' name='pmproaw_options[access_secret]' size='80' type='text' value='<?php echo esc_attr($access_secret); ?>' readonly='readonly'/>
+	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<script>
+		//hide this row in the table
+		jQuery('#pmproaw_consumer_secret').closest('tr').hide();
+	</script>
+	<?php
 }
 
 function pmproaw_option_users_lists()
@@ -564,12 +580,21 @@ function pmproaw_option_memberships_lists($level)
 // validate our options
 function pmproaw_options_validate($input) 
 {					
+	$options = get_option('pmproaw_options');
+	
 	//api key
 	$newinput['authorization_code'] = trim(preg_replace("[^a-zA-Z0-9\-\|]", "", $input['authorization_code']));
 	$newinput['access_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['access_key']));
 	$newinput['access_secret'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['access_secret']));
-	$newinput['double_opt_in'] = intval($input['double_opt_in']);
+
+	//clear access key and secret if authorization code was updated
+	if($options['authorization_code'] != $newinput['authorization_code']) {		
+		$newinput['access_key'] = '';
+		$newinput['access_secret'] = '';
+	}
 	
+	//other settings
+	//$newinput['double_opt_in'] = intval($input['double_opt_in']);	
 	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
 	
 	//user lists
@@ -640,7 +665,7 @@ function pmproaw_options_page()
 	$authorization_code = $options['authorization_code'];
 	$access_key = $options['access_key'];
 	$access_secret = $options['access_secret'];
-		
+	
 	//get token if needed
 	if(!empty($authorization_code) && (empty($access_key) || empty($access_secret)))
 	{
@@ -657,12 +682,12 @@ function pmproaw_options_page()
 			$access_secret = $accessSecret;
 			$options['access_secret'] = $access_secret;
 			
-			update_option('pmproaw_options', $options);
+			update_option('pmproaw_options', $options);			
 		}
 		catch(AWeberAPIException $exc) {
 			global $pmproaw_exception;
 			$pmproaw_exception = $exc;	
-			pmproaw_printAWeberAPIException($exc);
+			pmproaw_printAWeberAPIException($exc);			
 		}
 	}
 	
