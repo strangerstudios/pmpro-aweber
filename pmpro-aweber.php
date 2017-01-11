@@ -707,10 +707,20 @@ function pmproaw_options_page()
 		//get aweber account or fail
 		$account = pmproaw_getAccount();	
 		if(!empty($account)) {
-			try {
-				$pmproaw_lists = $account->lists->data['entries'];
+			try {								
+				if(true || $account->lists->data['total_size'] > 99) {
+					//need to grab lists this way to get > 100
+					$pmproaw_lists = array();					
+					foreach($account->lists as $somelist) {
+						$pmproaw_lists[] = $somelist->data;
+					}
+				} else {
+					//just get the entries array which has first 100
+					$pmproaw_lists = $account->lists->data['entries'];
+				}
+				
 				$all_lists = array();
-							
+								
 				//save all lists in an option
 				$i = 0;	
 				foreach ( $pmproaw_lists as $list ) {

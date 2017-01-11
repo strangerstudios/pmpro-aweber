@@ -38,6 +38,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 = 1.2 =
 * ENHANCEMENT: Improved messaging to make it more clear how to authorize the app at AWeber. Compatible for the Jan 16, 2017 API updates.
 * BUG: Fixed some warnings.
+* BUG/ENHANCEMENT: Will now fetch > 100 lists if you have that many. (Thanks, Fabio on GitHub)
 
 = 1.1.2 =
 * BUG: Fixed pmproaw_getAccount() error resulting in lists not being found
