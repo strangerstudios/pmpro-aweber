@@ -17,8 +17,6 @@ Author URI: http://www.strangerstudios.com
 	Your user keys should be entered on the settings page at Settings --> PMPro AWeber in your WP dashboard.
 */
 define('PMPROAW_APPID', '7f549046');
-define('PMPROAW_CONSUMER_KEY', 'AkQDSzyNCyG8jh7Or54YfYBh');
-define('PMPROAW_CONSUMER_SECRET', 'Osx8rC1PjATtpEAxjbsw7fcWx1QqhdscsZKCgffm');
 
 //init
 function pmproaw_init()
@@ -80,11 +78,11 @@ function pmproaw_getAccount($force = false)
 	if(empty($force) && empty($pmproaw_aweber_account)) {		
 		$options = get_option("pmproaw_options");
 		
-		if(empty($options['access_key']) || empty($options['access_secret']))
+		if(empty($options['consumer_key']) || empty($options['consumer_secret']) || empty($options['access_key']) || empty($options['access_secret']))
 			return false;
 		
 		try {
-			$pmproaw_aweber_api = new AWeberAPI(PMPROAW_CONSUMER_KEY, PMPROAW_CONSUMER_SECRET);
+			$pmproaw_aweber_api = new AWeberAPI($options['consumer_key'], $options['consumer_secret']);
 			$pmproaw_aweber_account = $pmproaw_aweber_api->getAccount($options['access_key'], $options['access_secret']);
 		} catch(AWeberAPIException $exc) {			
 			global $pmproaw_exception;
@@ -368,6 +366,8 @@ function pmproaw_admin_init()
 	register_setting('pmproaw_options', 'pmproaw_options', 'pmproaw_options_validate');	
 	add_settings_section('pmproaw_section_general', 'General Settings', 'pmproaw_section_general', 'pmproaw_options');		
 	add_settings_field('pmproaw_option_authorization_code', 'AWeber Authorization Code', 'pmproaw_option_authorization_code', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_consumer_key', 'AWeber Consumer Key', 'pmproaw_option_consumer_key', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_consumer_secret', 'AWeber Consumer Secret', 'pmproaw_option_consumer_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_users_lists', 'All Users List', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
@@ -482,6 +482,42 @@ function pmproaw_option_authorization_code()
 	}
 }
 
+function pmproaw_option_consumer_key()
+{
+	$options = get_option('pmproaw_options');		
+	if(isset($options['consumer_key']))
+		$consumer_key = $options['consumer_key'];
+	else
+		$consumer_key = "";
+	
+	?>
+	<input id='pmproaw_consumer_key' name='pmproaw_options[consumer_key]' size='80' type='text' value='<?php echo esc_attr($consumer_key); ?>' readonly='readonly'/>
+	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<script>
+		//hide this row in the table
+		jQuery('#pmproaw_consumer_key').closest('tr').hide();
+	</script>
+	<?php
+}
+
+function pmproaw_option_consumer_secret()
+{
+	$options = get_option('pmproaw_options');		
+	if(isset($options['consumer_secret']))
+		$consumer_secret = $options['consumer_secret'];
+	else
+		$consumer_secret = "";
+	
+	?>
+	<input id='pmproaw_consumer_secret' name='pmproaw_options[consumer_secret]' size='80' type='text' value='<?php echo esc_attr($consumer_secret); ?>' readonly='readonly'/>
+	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<script>
+		//hide this row in the table
+		jQuery('#pmproaw_consumer_secret').closest('tr').hide();
+	</script>
+	<?php
+}
+
 function pmproaw_option_access_key()
 {
 	$options = get_option('pmproaw_options');		
@@ -509,11 +545,11 @@ function pmproaw_option_access_secret()
 		$access_secret = "";
 	
 	?>
-	<input id='pmproaw_consumer_secret' name='pmproaw_options[access_secret]' size='80' type='text' value='<?php echo esc_attr($access_secret); ?>' readonly='readonly'/>
+	<input id='pmproaw_access_secret' name='pmproaw_options[access_secret]' size='80' type='text' value='<?php echo esc_attr($access_secret); ?>' readonly='readonly'/>
 	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
 	<script>
 		//hide this row in the table
-		jQuery('#pmproaw_consumer_secret').closest('tr').hide();
+		jQuery('#pmproaw_access_secret').closest('tr').hide();
 	</script>
 	<?php
 }
@@ -594,11 +630,15 @@ function pmproaw_options_validate($input)
 	
 	//api key
 	$newinput['authorization_code'] = trim(preg_replace("[^a-zA-Z0-9\-\|]", "", $input['authorization_code']));
+	$newinput['consumer_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['consumer_key']));
+	$newinput['consumer_secret'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['consumer_secret']));
 	$newinput['access_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['access_key']));
 	$newinput['access_secret'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['access_secret']));
 
 	//clear access key and secret if authorization code was updated
 	if($options['authorization_code'] != $newinput['authorization_code']) {		
+		$newinput['consumer_key'] = '';
+		$newinput['consumer_secret'] = '';
 		$newinput['access_key'] = '';
 		$newinput['access_secret'] = '';
 	}
@@ -672,25 +712,22 @@ function pmproaw_options_page()
 	
 	//check for a valid API key and get lists
 	$options = get_option("pmproaw_options");	
-	$authorization_code = $options['authorization_code'];
-	$access_key = $options['access_key'];
-	$access_secret = $options['access_secret'];
 	
 	//get token if needed
-	if(!empty($authorization_code) && (empty($access_key) || empty($access_secret)))
+	if(!empty($options['authorization_code']) && (empty($options['consumer_key']) || empty($options['consumer_secret']) || empty($options['access_key']) || empty($options['access_secret'])))
 	{
 		try {
 			# set $authorization_code to the code that is given to you from
 			# https://auth.aweber.com/1.0/oauth/authorize_app/YOUR_APP_ID			
-			$auth = AWeberAPI::getDataFromAweberID($authorization_code);
+			$auth = AWeberAPI::getDataFromAweberID($options['authorization_code']);			
 			list($consumerKey, $consumerSecret, $accessKey, $accessSecret) = $auth;
 
 			# Store the Consumer key/secret, as well as the AccessToken key/secret
 			# in your app, these are the credentials you need to access the API.
-			$access_key = $accessKey;
-			$options['access_key'] = $access_key;
-			$access_secret = $accessSecret;
-			$options['access_secret'] = $access_secret;
+			$options['consumer_key'] = $consumerKey;
+			$options['consumer_secret'] = $consumerSecret;
+			$options['access_key'] = $accessKey;
+			$options['access_secret'] = $accessSecret;
 			
 			update_option('pmproaw_options', $options);			
 		}
@@ -702,7 +739,7 @@ function pmproaw_options_page()
 	}
 	
 	//get lists
-	if(!empty($access_key) && !empty($access_secret))
+	if(!empty($options['consumer_key']) && !empty($options['consumer_secret']) && !empty($options['access_key']) && !empty($options['access_secret']))
 	{
 		//get aweber account or fail
 		$account = pmproaw_getAccount();	
@@ -745,8 +782,6 @@ function pmproaw_options_page()
 			}			
 		}
 	}
-	
-
 ?>
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"><br></div>
