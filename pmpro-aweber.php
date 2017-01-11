@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - AWeber Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-aweber/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: 1.1.2
+Version: 1.3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -138,7 +138,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 	$all_lists = get_option("pmproaw_all_lists");	
 		
 	//should we add them to any lists?
-	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['access_key']) && !empty($options['access_secret']))
+	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['consumer_key']) && !empty($options['consumer_secret']) && !empty($options['access_key']) && !empty($options['access_secret']))
 	{
 		//get user info
 		$list_user = get_userdata($user_id);		
@@ -203,7 +203,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 			//just catching errors so users don't see them			
 		}
 	}
-	elseif(!empty($options['access_key']) && !empty($options['access_secret']))
+	elseif(!empty($options['consumer_key']) && !empty($options['consumer_secret']) && !empty($options['access_key']) && !empty($options['access_secret']))
 	{		
 		//now they are a normal user should we add them to any lists?
 		if(!empty($options['users_lists']))
@@ -626,6 +626,7 @@ function pmproaw_option_memberships_lists($level)
 // validate our options
 function pmproaw_options_validate($input) 
 {					
+	global $pmproaw_levels;
 	$options = get_option('pmproaw_options');
 	
 	//api key
@@ -647,25 +648,33 @@ function pmproaw_options_validate($input)
 	//$newinput['double_opt_in'] = intval($input['double_opt_in']);	
 	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
 	
-	//user lists
-	if(!empty($input['users_lists']) && is_array($input['users_lists']))
-	{
-		$count = count($input['users_lists']);
-		for($i = 0; $i < $count; $i++)
-			$newinput['users_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_lists'][$i]));	;
+	//user lists	
+	if(!isset($input['users_lists'])) {
+		//no lists, probably needs to authenticate, keep old settings
+		$newinput['users_lists'] = $options['users_lists'];
+	} else {
+		//grab data from input
+		if(!empty($input['users_lists']) && is_array($input['users_lists']))
+		{
+			$count = count($input['users_lists']);
+			for($i = 0; $i < $count; $i++)
+				$newinput['users_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_lists'][$i]));	;
+		}
 	}
 	
-	//membership lists
-	global $pmproaw_levels;		
-	if(!empty($pmproaw_levels))
-	{
-		foreach($pmproaw_levels as $level)
-		{
-			if(!empty($input['level_' . $level->id . '_lists']) && is_array($input['level_' . $level->id . '_lists']))
-			{
-				$count = count($input['level_' . $level->id . '_lists']);
-				for($i = 0; $i < $count; $i++)
-					$newinput['level_' . $level->id . '_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_lists'][$i]));	;
+	//membership lists	
+	if(!empty($pmproaw_levels)) {
+		foreach($pmproaw_levels as $level) {
+			if(!isset($input['users_lists'])) {
+				//no lists, probably needs to authenticate, keep old settings
+				$newinput['level_' . $level->id . '_lists'] = $options['level_' . $level->id . '_lists'];
+			} else {
+				//grab data from input
+				if(!empty($input['level_' . $level->id . '_lists']) && is_array($input['level_' . $level->id . '_lists'])) {
+					$count = count($input['level_' . $level->id . '_lists']);
+					for($i = 0; $i < $count; $i++)
+						$newinput['level_' . $level->id . '_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_lists'][$i]));	;
+				}
 			}
 		}
 	}

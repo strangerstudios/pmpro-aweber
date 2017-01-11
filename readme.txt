@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 4
 Tested up to: 4.7
-Stable tag: 1.2
+Stable tag: 1.3
 
 Sync your WordPress users and members with AWeber lists.
 
@@ -35,6 +35,12 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.3 =
+* NOTE: All users will have to reauthenticate PMPro AWeber after updating.
+* NOTE: If you are wondering, v1.2 was live on our update server for about 30m. There is no harm if you updated to v1.2, but please update to v1.3 now.
+* BUG/ENHANCEMENT: Now fetching a new consumer key/secret pair.
+* ENHANCEMENT: Making sure we don't forget your list settings when reauthenticating with AWeber.
+
 = 1.2 =
 * ENHANCEMENT: Improved messaging to make it more clear how to authorize the app at AWeber. Compatible for the Jan 16, 2017 API updates.
 * BUG: Fixed some warnings.
