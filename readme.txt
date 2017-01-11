@@ -40,6 +40,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 * NOTE: If you are wondering, v1.2 was live on our update server for about 30m. There is no harm if you updated to v1.2, but please update to v1.3 now.
 * BUG/ENHANCEMENT: Now fetching a new consumer key/secret pair.
 * ENHANCEMENT: Making sure we don't forget your list settings when reauthenticating with AWeber.
+* ENHANCEMENT: Added an admin notice that checks no more than once per day if the AWeber API is working and if not shows a link to the settings page.
 
 = 1.2 =
 * ENHANCEMENT: Improved messaging to make it more clear how to authorize the app at AWeber. Compatible for the Jan 16, 2017 API updates.

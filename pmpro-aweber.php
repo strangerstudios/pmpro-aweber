@@ -95,6 +95,32 @@ function pmproaw_getAccount($force = false)
 	return $pmproaw_aweber_account;
 }
 
+//if the API is not working, show a notice and link to settings
+function pmproaw_admin_notices() {
+	//check transient so we don't check to often
+	$pmproaw_api_squelch_notice = get_transient('pmproaw_api_squelch_notice');
+	if($pmproaw_api_squelch_notice)
+		return;
+	
+	//don't show on the options page
+	if(!empty($_REQUEST['page']) && $_REQUEST['page'] == 'pmproaw_options')
+		return;
+		
+	//haven't checked in a while so try to connect
+	$account = pmproaw_getAccount();
+	if(empty($account)) {
+	?>
+	<div class="notice notice-error is-dismissible">
+		<p>Error connecting to the AWeber API. <a href="<?php echo admin_url('options-general.php?page=pmproaw_options');?>">Please check your PMPro AWeber settings and reauthorize if necessary.</a></p>
+	</div>
+	<?php
+	} else {
+		//API seems okay, let's disable the check for 24 hours
+		set_transient('pmproaw_api_squelch_notice', true, 60*60*24);
+	}
+}
+add_action('admin_notices', 'pmproaw_admin_notices');
+
 //for when checking out
 function pmproaw_pmpro_after_checkout($user_id)
 {
@@ -707,6 +733,10 @@ add_action("init", "pmproaw_init_oauth");
 
 //show exception error
 function pmproaw_printAWeberAPIException($exc) {
+	//don't print unless we're on the settings page
+	if(!current_user_can('manage_options') || (is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] != 'pmproaw_options'))
+		return;
+	
 	print "<div class='notice notice-error'><h3>AWeberAPIException:</h3>";
 	print " <li> Type: $exc->type              <br>";
 	print " <li> Msg : $exc->message           <br>";
@@ -754,7 +784,7 @@ function pmproaw_options_page()
 		$account = pmproaw_getAccount();	
 		if(!empty($account)) {
 			try {								
-				if(true || $account->lists->data['total_size'] > 99) {
+				if($account->lists->data['total_size'] > 99) {
 					//need to grab lists this way to get > 100
 					$pmproaw_lists = array();					
 					foreach($account->lists as $somelist) {
