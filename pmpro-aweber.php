@@ -124,7 +124,15 @@ add_action('admin_notices', 'pmproaw_admin_notices');
 //for when checking out
 function pmproaw_pmpro_after_checkout($user_id)
 {
-	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+    global $pmpro_checkout_level_ids;
+    if (isset($pmpro_checkout_level_ids) && count($pmpro_checkout_level_ids) > 0){
+        foreach ($pmpro_checkout_level_ids as $level_id) {
+            pmproaw_pmpro_after_change_membership_level($level_id, $user_id);
+        }
+    }else{
+        pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+    }
+	
 }
 
 //subscribe users when they register
