@@ -366,7 +366,10 @@ function pmproaw_profile_update($user_id, $old_user_data)
 					//find subscriber
 					$subscribers = $aw_list->subscribers;
 				
-					$params = array('status' => 'subscribed');
+					$params = array(
+                                            'status' => 'subscribed',
+                                            'email' => $old_user_data->user_email
+                                        );
 					$found_subscribers = $subscribers->find($params);
 				
 					//change email
