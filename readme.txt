@@ -2,7 +2,7 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 4
-Tested up to: 4.7
+Tested up to: 4.9.4
 Stable tag: 1.3
 
 Sync your WordPress users and members with AWeber lists.
