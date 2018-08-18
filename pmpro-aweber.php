@@ -127,7 +127,15 @@ add_action('admin_notices', 'pmproaw_admin_notices');
 //for when checking out
 function pmproaw_pmpro_after_checkout($user_id)
 {
-	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+    global $pmpro_checkout_level_ids;
+    if (isset($pmpro_checkout_level_ids) && count($pmpro_checkout_level_ids) > 0){
+        foreach ($pmpro_checkout_level_ids as $level_id) {
+            pmproaw_pmpro_after_change_membership_level($level_id, $user_id);
+        }
+    }else{
+        pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+    }
+	
 }
 
 //subscribe users when they register
@@ -369,7 +377,10 @@ function pmproaw_profile_update($user_id, $old_user_data)
 					//find subscriber
 					$subscribers = $aw_list->subscribers;
 				
-					$params = array('status' => 'subscribed');
+					$params = array(
+                                            'status' => 'subscribed',
+                                            'email' => $old_user_data->user_email
+                                        );
 					$found_subscribers = $subscribers->find($params);
 				
 					//change email
@@ -596,6 +607,7 @@ function pmproaw_option_users_lists()
 	if(!empty($pmproaw_lists))
 	{
 		echo "<select multiple='yes' name=\"pmproaw_options[users_lists][]\">";
+                echo "<option value='-1'>-- Nessuna Lista --</option>";
 		foreach($pmproaw_lists as $list)
 		{
 			echo "<option value='" . $list['id'] . "' ";
@@ -637,6 +649,7 @@ function pmproaw_option_memberships_lists($level)
 	if(!empty($pmproaw_lists))
 	{
 		echo "<select multiple='yes' name=\"pmproaw_options[level_" . $level->id . "_lists][]\">";
+                echo "<option value='-1'>-- Nessuna Lista --</option>";
 		foreach($pmproaw_lists as $list)
 		{
 			echo "<option value='" . $list['id'] . "' ";
@@ -686,23 +699,27 @@ function pmproaw_options_validate($input)
 		if(!empty($input['users_lists']) && is_array($input['users_lists']))
 		{
 			$count = count($input['users_lists']);
-			for($i = 0; $i < $count; $i++)
-				$newinput['users_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_lists'][$i]));	;
+			foreach($input['users_lists'] as $list){
+                            if ($list == -1) continue;
+                            $newinput['users_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $list));
+                        }
 		}
 	}
 	
 	//membership lists	
 	if(!empty($pmproaw_levels)) {
 		foreach($pmproaw_levels as $level) {
-			if(!isset($input['users_lists'])) {
+			if(!isset($input['level_' . $level->id . '_lists'])) {
 				//no lists, probably needs to authenticate, keep old settings
 				$newinput['level_' . $level->id . '_lists'] = $options['level_' . $level->id . '_lists'];
 			} else {
 				//grab data from input
 				if(!empty($input['level_' . $level->id . '_lists']) && is_array($input['level_' . $level->id . '_lists'])) {
 					$count = count($input['level_' . $level->id . '_lists']);
-					for($i = 0; $i < $count; $i++)
-						$newinput['level_' . $level->id . '_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_lists'][$i]));	;
+					foreach($input['level_' . $level->id . '_lists'] as $list){
+                                            if ($list == -1) continue;
+                                            $newinput['level_' . $level->id . '_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $list));	;
+                                        }
 				}
 			}
 		}
