@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - AWeber Add On
 Plugin URI: https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/
 Description: Sync your WordPress users and members with AWeber lists.
-Version: 1.3
+Version: 1.3.1
 Author: Paid Memberships Pro
 Author URI: https://www.paidmembershipspro.com/
 */
@@ -671,14 +671,18 @@ function pmproaw_options_validate($input)
 		$newinput['consumer_secret'] = '';
 		$newinput['access_key'] = '';
 		$newinput['access_secret'] = '';
+
+		$reauthorizing = true;
+	} else {
+		$reauthorizing = false;
 	}
 	
 	//other settings
 	//$newinput['double_opt_in'] = intval($input['double_opt_in']);	
 	$newinput['unsubscribe'] = preg_replace("[^a-zA-Z0-9\-]", "", $input['unsubscribe']);
-	
+
 	//user lists	
-	if(!isset($input['users_lists'])) {
+	if( $reauthorizing ) {
 		//no lists, probably needs to authenticate, keep old settings
 		$newinput['users_lists'] = $options['users_lists'];
 	} else {
@@ -694,7 +698,7 @@ function pmproaw_options_validate($input)
 	//membership lists	
 	if(!empty($pmproaw_levels)) {
 		foreach($pmproaw_levels as $level) {
-			if(!isset($input['users_lists'])) {
+			if( $reauthorizing ) {
 				//no lists, probably needs to authenticate, keep old settings
 				$newinput['level_' . $level->id . '_lists'] = $options['level_' . $level->id . '_lists'];
 			} else {
