@@ -687,7 +687,7 @@ function pmproaw_options_validate($input)
 		{
 			$count = count($input['users_lists']);
 			for($i = 0; $i < $count; $i++)
-				$newinput['users_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_lists'][$i]));	;
+				$newinput['users_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_lists'][$i]));
 		}
 	}
 	
@@ -702,7 +702,7 @@ function pmproaw_options_validate($input)
 				if(!empty($input['level_' . $level->id . '_lists']) && is_array($input['level_' . $level->id . '_lists'])) {
 					$count = count($input['level_' . $level->id . '_lists']);
 					for($i = 0; $i < $count; $i++)
-						$newinput['level_' . $level->id . '_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_lists'][$i]));	;
+						$newinput['level_' . $level->id . '_lists'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_lists'][$i]));
 				}
 			}
 		}
