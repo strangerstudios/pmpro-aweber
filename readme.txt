@@ -2,22 +2,38 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 4
-Tested up to: 5.2.2
+Tested up to: 5.4.1
 Stable tag: 1.3.1
 
-Sync your WordPress users and members with AWeber lists.
+Add users and members to AWeber lists based on their membership level.
 
 == Description ==
 
-Sync your WordPress users and members with AWeber lists.
+Add users and members to AWeber lists based on their membership level.
 
-If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more lists.
+This plugin offers extended functionality for [membership websites using the Paid Memberships Pro plugin](https://wordpress.org/plugins/paid-memberships-pro/) available for free in the WordPress plugin repository. 
+
+With Paid Memberships Pro installed, you can specify unique lists for each membership level.
+
+The settings page allows the site admin to specify which lists to assign for all users and members to plus additional features you may wish to adjust. The first step is to connect your website to AWeber using your account's authorization code.
 
 == Installation ==
+This plugin works with and without Paid Memberships Pro installed.
 
+= Download, Install and Activate! =
 1. Upload the `pmpro-aweber` directory to the `/wp-content/plugins/` directory of your site.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. The settings page is at Settings --> PMPro AWeber in the WP dashboard.
+1. Navigate to Settings > PMPro Aweber to proceed with setup.
+
+= Configuration and Settings =
+
+**Authorize your app with AWeber:** Your Authorization Code will be provided once the app is authorized with your AWeber account. Navigate to Settings > PMPro AWeber in the WordPress dashboard to authorize your app with AWeber.
+
+After entering your Authorization Code, continue with the setup by assigning All User Lists, Membership Level Lists, and review the additional settings.
+
+For full documentation on all settings, please visit the [AWeber Integration Add On documentation page at Paid Memberships Pro](https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/). 
+
+Filter hooks are available for developers that need to customize specific aspects of the integration. [Please explore the plugin's action and filter hooks here](https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/#hooks).
 
 == Frequently Asked Questions ==
 
