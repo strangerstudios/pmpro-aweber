@@ -375,14 +375,16 @@ function pmproaw_profile_update($user_id, $old_user_data)
 					//change email
 					foreach($found_subscribers as $subscriber)
 					{
-						$subscriber->email = $new_user_data->user_email;
-						$subscriber->save();							
+						if ( strtolower( $old_user_data->user_email ) === strtolower( $subscriber->email ) ) {
+							$subscriber->email = $new_user_data->user_email;
+							$subscriber->save();
+						}
 					}
 				}
 			}
 		}
 		catch(AWeberAPIException $exc) {
-			//just catching errors to hide them from users					
+			//just catching errors to hide them from users
 		}
 	}
 }
