@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 4
-Tested up to: 5.4.1
-Stable tag: 1.3.1
+Tested up to: 5.5
+Stable tag: 1.3.2
 
 Add users and members to AWeber lists based on their membership level.
 
@@ -51,6 +51,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.3.2 - 2020-11-04 =
+* BUG FIX: Fixed issue where the incorrect subscriber in AWeber may be updated when a user changes their email address in WordPress.
+
 = 1.3.1 =
 * BUG FIX: Fixed issues with selecting and unselecting lists on the settings page.
 
