@@ -369,20 +369,22 @@ function pmproaw_profile_update($user_id, $old_user_data)
 					//find subscriber
 					$subscribers = $aw_list->subscribers;
 				
-					$params = array('status' => 'subscribed');
+					$params = array(
+						'status' => 'subscribed',
+						'email'  => $old_user_data->user_email,
+					);
 					$found_subscribers = $subscribers->find($params);
-				
-					//change email
-					foreach($found_subscribers as $subscriber)
-					{
+					if ( count( $found_subscribers ) ) {
+						// Subscriber found. Change email.
+						$subscriber = $found_subscribers[0];
 						$subscriber->email = $new_user_data->user_email;
-						$subscriber->save();							
+						$subscriber->save();
 					}
 				}
 			}
 		}
 		catch(AWeberAPIException $exc) {
-			//just catching errors to hide them from users					
+			//just catching errors to hide them from users
 		}
 	}
 }
