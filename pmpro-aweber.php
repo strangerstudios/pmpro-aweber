@@ -46,7 +46,14 @@ function pmproaw_init()
 	//setup hooks for PMPro levels
 	pmproaw_getPMProLevels();
 	global $pmproaw_levels;
-	if(!empty($pmproaw_levels))
+	
+	//This function (pmproaw_init) is called in the pmproaw_getAccount() function 
+	//even though it is called on every 'init' action. 
+	//The subscribe and unsubscribe functions amongst others call pmproaw_getAccount().
+	//Which means, without 'current_action === init', attempts are made to add 'pmproaw_pmpro_after_change_membership_level' 
+	//even after it is added in the 'init' action.
+	//This makes it incredibly hard to override if the user wants to do some custom function.
+	if(!empty($pmproaw_levels) && current_action() === 'init')
 	{		
 		add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
 	}		
