@@ -42,21 +42,6 @@ function pmproaw_init()
 	//setup hooks for new users	
 	if(!empty($options['users_lists']))
 		add_action("user_register", "pmproaw_user_register");
-	
-	//setup hooks for PMPro levels
-	pmproaw_getPMProLevels();
-	global $pmproaw_levels;
-	
-	//This function (pmproaw_init) is called in the pmproaw_getAccount() function 
-	//even though it is called on every 'init' action. 
-	//The subscribe and unsubscribe functions amongst others call pmproaw_getAccount().
-	//Which means, without 'current_action === init', attempts are made to add 'pmproaw_pmpro_after_change_membership_level' 
-	//even after it is added in the 'init' action.
-	//This makes it incredibly hard to override if the user wants to do some custom function.
-	if(!empty($pmproaw_levels) && current_action() === 'init')
-	{		
-		add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
-	}		
 }
 add_action("init", "pmproaw_init", 30);
 
@@ -166,10 +151,13 @@ function pmproaw_user_register($user_id)
 
 //subscribe new members (PMPro) when they register
 function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
-{
-	clean_user_cache($user_id);
+{	
+	$pmproaw_levels = pmproaw_getPMProLevels();
+	if ( empty( $pmproaw_levels ) ) {
+		return;
+	}	
 	
-	global $pmproaw_levels;
+	clean_user_cache($user_id);	
 	$options = get_option("pmproaw_options");
 	$all_lists = get_option("pmproaw_all_lists");	
 		
@@ -291,6 +279,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 		}
 	}
 }
+add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
 
 function pmproaw_unsubscribe($list_id, $list_user)
 {	
@@ -406,7 +395,7 @@ add_action("profile_update", "pmproaw_profile_update", 10, 2);
 //admin init. registers settings
 function pmproaw_admin_init()
 {
-	//setup settings
+	// setup settings
 	register_setting('pmproaw_options', 'pmproaw_options', 'pmproaw_options_validate');	
 	add_settings_section('pmproaw_section_general', 'General Settings', 'pmproaw_section_general', 'pmproaw_options');		
 	add_settings_field('pmproaw_option_authorization_code', 'AWeber Authorization Code', 'pmproaw_option_authorization_code', 'pmproaw_options', 'pmproaw_section_general');		
@@ -415,34 +404,38 @@ function pmproaw_admin_init()
 	add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_users_lists', 'All Users List', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
-	//add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
+	// add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
 	add_settings_field('pmproaw_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
 
-	//pmpro-related options	
-	add_settings_section('pmproaw_section_levels', 'Membership Levels and Lists', 'pmproaw_section_levels', 'pmproaw_options');		
+	// pmpro-related options	
+	add_settings_section('pmproaw_section_levels', 'Membership Levels and Lists', 'pmproaw_section_levels', 'pmproaw_options');
 	
-	//add options for levels
-	pmproaw_getPMProLevels();
-	global $pmproaw_levels;
+	//add options for levels	
+	$pmproaw_levels = pmproaw_getPMProLevels();
 	if(!empty($pmproaw_levels))
 	{						
 		foreach($pmproaw_levels as $level)
 		{
 			add_settings_field('pmproaw_option_memberships_lists_' . $level->id, $level->name, 'pmproaw_option_memberships_lists', 'pmproaw_options', 'pmproaw_section_levels', array($level));
 		}
-	}		
+	}
 }
 add_action("admin_init", "pmproaw_admin_init");
 
-//set the pmproaw_levels array if PMPro is installed
+/**
+ * Get all PMPro levels, including hidden levels.
+ * The pmpro_getAllLevels function is good enough to use now.
+ * But PMPro might not be installed, so we need this wrapper.
+ */
 function pmproaw_getPMProLevels()
 {	
-	global $pmproaw_levels, $wpdb;
-	
-	if ( isset( $wpdb->pmpro_membership_levels ) ) 
-		$pmproaw_levels = $wpdb->get_results("SELECT * FROM $wpdb->pmpro_membership_levels ORDER BY id");			
-	else
+	if ( function_exists( 'pmpro_getAllLevels' ) ) {
+		$pmproaw_levels = pmpro_getAllLevels( true, true );
+	} else {
 		$pmproaw_levels = array();
+	}
+	
+	return $pmproaw_levels;
 }
 
 //options sections
@@ -456,7 +449,9 @@ function pmproaw_section_general()
 //options sections
 function pmproaw_section_levels()
 {	
-	global $wpdb, $pmproaw_levels;
+	global $wpdb;
+	
+	$pmproaw_levels = pmproaw_getPMProLevels();
 	
 	//do we have PMPro installed?
 	if(class_exists("MemberOrder"))
@@ -670,7 +665,7 @@ function pmproaw_option_memberships_lists($level)
 // validate our options
 function pmproaw_options_validate($input) 
 {					
-	global $pmproaw_levels;
+	$pmproaw_levels = pmproaw_getPMProLevels();
 	$options = get_option('pmproaw_options');
 	
 	//api key
