@@ -159,7 +159,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 	
 	clean_user_cache($user_id);	
 	$options = get_option("pmproaw_options");
-	$all_lists = get_option("pmproaw_all_lists");	
+	$all_lists = get_option("pmproaw_all_lists");
 		
 	//should we add them to any lists?
 	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['consumer_key']) && !empty($options['consumer_secret']) && !empty($options['access_key']) && !empty($options['access_secret']))
@@ -253,7 +253,7 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 				}
 			}
 			catch(AWeberAPIException $exc) {
-				//just catching errors so users don't see them				
+				//just catching errors so users don't see them			
 			}
 		}
 		else
@@ -403,7 +403,7 @@ function pmproaw_admin_init()
 	add_settings_field('pmproaw_option_consumer_secret', 'AWeber Consumer Secret', 'pmproaw_option_consumer_secret', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
 	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_users_lists', 'All Users List', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
+	add_settings_field('pmproaw_option_users_lists', 'Non-Members Lists', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
 	// add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
 	add_settings_field('pmproaw_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
 
