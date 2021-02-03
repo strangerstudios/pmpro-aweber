@@ -331,7 +331,10 @@ function pmproaw_subscribe($list_id, $list_user)
 	{
 		$new_subscriber = $subscribers->create(array(
 				'email' => $list_user->user_email,
-				'name' => trim($list_user->first_name . " " . $list_user->last_name)));
+				'name' => trim($list_user->first_name . " " . $list_user->last_name),
+		                'update_existing' => 'true',
+				'status' => 'subscribed',
+		));
 	}
 	
 	else
@@ -339,7 +342,10 @@ function pmproaw_subscribe($list_id, $list_user)
 		$new_subscriber = $subscribers->create(array(
 				'email' => $list_user->user_email,
 				'name' => trim($list_user->first_name . " " . $list_user->last_name),
-				'custom_fields' => $custom_fields));
+                                'update_existing' => 'true',
+                                'status' => 'subscribed',
+                                'custom_fields' => $custom_fields,
+		));
 	}
 }
 
