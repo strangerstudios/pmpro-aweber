@@ -1,7 +1,7 @@
 === Paid Memberships Pro - AWeber Add On ===
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, aweber, email marketing
-Requires at least: 4
+Requires at least: 5.2
 Tested up to: 6.2
 Stable tag: 1.3.2
 
