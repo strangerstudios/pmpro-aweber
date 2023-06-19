@@ -473,7 +473,7 @@ class OAuthApplication implements AWeberOAuthAdapter {
             echo "</pre>";
         }
 
-        if (!$resp) {
+        if (!$resp || empty( $resp->body ) ) {
             $msg  = 'Unable to connect to the AWeber API.  (' . $this->error . ')';
             $error = array('message' => $msg, 'type' => 'APIUnreachableError',
                            'documentation_url' => 'https://labs.aweber.com/docs/troubleshooting');
