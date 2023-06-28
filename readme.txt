@@ -51,6 +51,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.3.3 - 2023-06-28 =
+* BUG FIX: Fixes a fatal error when trying to connect to Aweber on a local environment. (@JarrydLong)
+
 = 1.3.2 - 2020-11-04 =
 * BUG FIX: Fixed issue where the incorrect subscriber in AWeber may be updated when a user changes their email address in WordPress.
 
