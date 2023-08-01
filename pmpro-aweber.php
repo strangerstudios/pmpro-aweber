@@ -754,7 +754,7 @@ function pmproaw_printAWeberAPIException($exc) {
 	if(!current_user_can('manage_options') || (is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] != 'pmproaw_options'))
 		return;
 	
-	print "<div class='notice notice-error'><h3>AWeberAPIException:</h3>";
+	print "<div class='notice notice-error'><h2>AWeberAPIException:</h2>";
 	print " <li> Type: $exc->type              <br>";
 	print " <li> Msg : $exc->message           <br>";
 	print " <li> Docs: $exc->documentation_url <br>";
