@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - AWeber Add On
 Plugin URI: https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/
 Description: Add users and members to AWeber lists based on their membership level.
-Version: 1.3.3
+Version: 1.3.4
 Author: Paid Memberships Pro
 Author URI: https://www.paidmembershipspro.com/
 */
@@ -134,7 +134,7 @@ function pmproaw_user_register($user_id)
 /**
  * Handle list changes after membership levels are changed.
  *
- * @since TBD
+ * @since 1.3.4
  *
  * @param array $old_user_levels Array with user ID as key and array of old levels as value.
  */

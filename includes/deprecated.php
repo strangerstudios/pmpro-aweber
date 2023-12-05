@@ -3,11 +3,11 @@
 // The following functions are all being replaced by the new pmproaw_pmpro_after_all_membership_level_changes() function.
 
 /**
- * @deprecated TBD
+ * @deprecated 1.3.4
  */
 function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 {	
-	_deprecated_function( __FUNCTION__, 'TBD', 'pmproaw_pmpro_after_all_membership_level_changes' );
+	_deprecated_function( __FUNCTION__, '1.3.4', 'pmproaw_pmpro_after_all_membership_level_changes' );
 
 	$pmproaw_levels = pmproaw_getPMProLevels();
 	if ( empty( $pmproaw_levels ) ) {
@@ -138,11 +138,11 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 1.3.4
  */
 function pmproaw_wp()
 {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '1.3.4' );
 	if(is_admin())
 		return;
 		
@@ -155,10 +155,10 @@ function pmproaw_wp()
 }
 
 /**
- * @deprecated TBD
+ * @deprecated 1.3.4
  */
 function pmproaw_pmpro_after_checkout($user_id)
 {
-	_deprecated_function( __FUNCTION__, 'TBD', 'pmproaw_pmpro_after_all_membership_level_changes' );
+	_deprecated_function( __FUNCTION__, '1.3.4', 'pmproaw_pmpro_after_all_membership_level_changes' );
 	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
 }
