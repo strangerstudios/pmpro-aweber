@@ -3,7 +3,7 @@ Contributors: strangerstudios, paidmembershipspro
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 5.2
 Tested up to: 6.4.1
-Stable tag: 1.3.2
+Stable tag: 1.3.4
 
 Add users and members to AWeber lists based on their membership level.
 
@@ -51,6 +51,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.3.4 - 2023-12-05 =
+* ENHANCEMENT: Added support for Multiple Memberships Per User and Paid Memberships Pro 3.0 (@dparker1005).
+
 = 1.3.3 - 2023-06-28 =
 * BUG FIX: Fixes a fatal error when trying to connect to Aweber on a local environment. (@JarrydLong)
 
