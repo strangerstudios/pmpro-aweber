@@ -18,6 +18,9 @@ Author URI: https://www.paidmembershipspro.com/
 */
 define('PMPROAW_APPID', '7f549046');
 
+// Load deprecated.php
+require_once( dirname( __FILE__ ) . '/includes/deprecated.php' );
+
 //init
 function pmproaw_init()
 {
@@ -44,21 +47,6 @@ function pmproaw_init()
 		add_action("user_register", "pmproaw_user_register");
 }
 add_action("init", "pmproaw_init", 30);
-
-//use a different action if we are on the checkout page
-function pmproaw_wp()
-{
-	if(is_admin())
-		return;
-		
-	global $post;
-	if(!empty($post->post_content) && strpos($post->post_content, "[pmpro_checkout]") !== false)
-	{
-		remove_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15);
-		add_action("pmpro_after_checkout", "pmproaw_pmpro_after_checkout", 15);	
-	}
-}
-add_action("wp", "pmproaw_wp", 0);
 
 /*
 	Load the AWeber API
@@ -116,12 +104,6 @@ function pmproaw_admin_notices() {
 }
 add_action('admin_notices', 'pmproaw_admin_notices');
 
-//for when checking out
-function pmproaw_pmpro_after_checkout($user_id)
-{
-	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
-}
-
 //subscribe users when they register
 function pmproaw_user_register($user_id)
 {
@@ -149,137 +131,84 @@ function pmproaw_user_register($user_id)
 	}
 }
 
-//subscribe new members (PMPro) when they register
-function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
-{	
-	$pmproaw_levels = pmproaw_getPMProLevels();
-	if ( empty( $pmproaw_levels ) ) {
-		return;
-	}	
-	
-	clean_user_cache($user_id);	
-	$options = get_option("pmproaw_options");
-	$all_lists = get_option("pmproaw_all_lists");
-		
-	//should we add them to any lists?
-	if(!empty($options['level_' . $level_id . '_lists']) && !empty($options['consumer_key']) && !empty($options['consumer_secret']) && !empty($options['access_key']) && !empty($options['access_secret']))
-	{
-		//get user info
-		$list_user = get_userdata($user_id);		
-		
-		//subscribe to each list
-		try {		
-			
-			foreach($options['level_' . $level_id . '_lists'] as $list_id)
-			{					
-				//echo "<hr />Trying to subscribe to " . $list_id . "...";
-				pmproaw_subscribe($list_id, $list_user);							
-			}
-			
-			foreach($all_lists as $list)
-			{
-				//Unsubscribe set to "No"
-				if(!$options['unsubscribe'])
-					return;
-				
-				//Unsubscribe set to "Yes"
-				if($options['unsubscribe'] == "all")
-				{
-					if(!in_array($list['id'], $options['level_' . $level_id . '_lists']))
-					{
-						pmproaw_unsubscribe($list, $list_user);
-					}
-				}
-				
-				//Unsubscribe set to "Yes (Old Level Lists Only)
-				else
-				{
-					//get their prevous level lists
-					global $wpdb;
-					
-					if($level_id)
-						$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
-					
-					else
-						$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1");
-		
-					if($last_level)
-					{			
-						$last_level_id = $last_level[0]->membership_id;
-						
-						if(!empty($options['level_'.$last_level_id.'_lists']))
-							$old_level_lists = $options['level_'.$last_level_id.'_lists'];
-						else
-							$old_level_lists = array();
-					}
-					else
-						$old_level_lists = array();
-					
-					//if we find this list id in thier old level, then unsubscribe
-					if(in_array($list['id'], $old_level_lists))
-					{
-						pmproaw_unsubscribe($list, $list_user);
-					}
-				}
-			}
-		}
-		catch(AWeberAPIException $exc) {
-			//just catching errors so users don't see them			
-		}
-	}
-	elseif(!empty($options['consumer_key']) && !empty($options['consumer_secret']) && !empty($options['access_key']) && !empty($options['access_secret']))
-	{		
-		//now they are a normal user should we add them to any lists?
-		if(!empty($options['users_lists']))
-		{
-			//get user info
-			$list_user = get_userdata($user_id);
-			
-			//subscribe to each list
-			try {
+/**
+ * Handle list changes after membership levels are changed.
+ *
+ * @since TBD
+ *
+ * @param array $old_user_levels Array with user ID as key and array of old levels as value.
+ */
+function pmproaw_pmpro_after_all_membership_level_changes( $old_user_levels ) {
+	// Get options.
+	$options = get_option( 'pmproaw_options' );
 
-				foreach($options['users_lists'] as $list)
-				{					
-					if ( is_array($list) && isset($list['id']) )
-						pmproaw_subscribe($list['id'], $list_user);
-					else
-						pmproaw_subscribe($list, $list_user);
-				}
-				
-				//unsubscribe from any list not assigned to users
-				foreach($all_lists as $list)
-				{
-					pmproaw_unsubscribe($list, $list_user);
-				}
+	// Loop through all the users who have had changes.
+	foreach ( $old_user_levels as $user_id => $old_levels ) {
+		// Get the lists that the user should now be subscribed to.
+		$new_lists = array();
+		$levels = pmpro_getMembershipLevelsForUser( $user_id );
+		if ( empty( $levels ) ) {
+			// User does not have a memberhsip level. Get non-member lists.
+			if ( ! empty( $options['users_lists'] ) ) {
+				$new_lists = $options['users_lists'];
 			}
-			catch(AWeberAPIException $exc) {
-				//just catching errors so users don't see them			
+		} else {
+			foreach ( $levels as $level ) {
+				if ( ! empty( $options['level_' . $level->id . '_lists'] ) ) {
+					$new_lists = array_merge( $new_lists, $options['level_' . $level->id . '_lists'] );
+				}
 			}
 		}
-		else
-		{			
-			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
-			if(is_array($all_lists))
-			{
-				//get user info
-				$list_user = get_userdata($user_id);
-				
-				//unsubscribe to each list
-				try {
-				
-					foreach($all_lists as $list)
-					{
-						pmproaw_unsubscribe($list, $list_user);
+
+		// Get the lists that the user used to be subscribed to if we are going to unsubscribe.
+		$old_lists = array();
+		if ( ! empty( $options['unsubscribe'] ) ) {
+			// Get the lists that the user was subscribed to before the change.
+			$old_lists = array();
+			if ( empty( $old_levels ) ) {
+				// User did not have a membership level before. Get non-member lists.
+				if ( ! empty( $options['users_lists'] ) ) {
+					$old_lists = $options['users_lists'];
+				}
+			} else {
+				foreach ( $old_levels as $level ) {
+					if ( ! empty( $options['level_' . $level->id . '_lists'] ) ) {
+						$old_lists = array_merge( $old_lists, $options['level_' . $level->id . '_lists'] );
 					}
 				}
-				catch(AWeberAPIException $exc) {
-					//just catching errors to hide them from users					
-				}
+			}
+		}
+
+		// Unique both sets of lists.
+		$new_lists = array_unique( $new_lists );
+		$old_lists = array_unique( $old_lists );
+
+		// Calculate the unsubscribe lists.
+		$unsubscribe_lists = array_diff( $old_lists, $new_lists );
+
+		// Process all subscriptions.
+		$user = get_userdata( $user_id );
+		foreach ( $new_lists as $list_id ) {
+			// Subscribe the user to the list.
+			try {
+				pmproaw_subscribe( $list_id, $user );
+			} catch ( AWeberAPIException $exc ) {
+				// Just catching errors so users don't see them.
+			}
+		}
+
+		// Process all unsubscriptions.
+		foreach ( $unsubscribe_lists as $list_id ) {
+			// Unsubscribe the user from the list.
+			try {
+				pmproaw_unsubscribe( $list_id, $user );
+			} catch ( AWeberAPIException $exc ) {
+				// Just catching errors so users don't see them.
 			}
 		}
 	}
 }
-add_action("pmpro_after_change_membership_level", "pmproaw_pmpro_after_change_membership_level", 15, 2);
+add_action( 'pmpro_after_all_membership_level_changes', 'pmproaw_pmpro_after_all_membership_level_changes' );
 
 function pmproaw_unsubscribe($list_id, $list_user)
 {	
