@@ -2,7 +2,7 @@
 Contributors: strangerstudios, paidmembershipspro
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 5.2
-Tested up to: 6.4.1
+Tested up to: 6.5
 Stable tag: 1.3.4
 
 Add users and members to AWeber lists based on their membership level.
