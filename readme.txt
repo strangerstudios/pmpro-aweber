@@ -11,7 +11,7 @@ Add users and members to AWeber lists based on their membership level.
 
 Add users and members to AWeber lists based on their membership level.
 
-This plugin offers extended functionality for [membership websites using the Paid Memberships Pro plugin](https://wordpress.org/plugins/paid-memberships-pro/) available for free in the WordPress plugin repository. 
+This plugin offers extended functionality for [membership websites using the Paid Memberships Pro plugin](https://www.paidmembershipspro.com). 
 
 With Paid Memberships Pro installed, you can specify unique lists for each membership level.
 
