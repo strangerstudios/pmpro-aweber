@@ -1,15 +1,18 @@
-# Translation of Plugins - Paid Memberships Pro &#8211; AWeber Add On - Stable (latest release) in Dutch
-# This file is distributed under the same license as the Plugins - Paid Memberships Pro &#8211; AWeber Add On - Stable (latest release) package.
+# Copyright (C) 2024 Paid Memberships Pro
+# This file is distributed under the same license as the Paid Memberships Pro - AWeber Add On plugin.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2024-01-23 12:49:13+0000\n"
+"Project-Id-Version: Paid Memberships Pro - AWeber Add On 1.4\n"
+"Report-Msgid-Bugs-To: info@paidmembershipspro.com\n"
+"Last-Translator: Paid Memberships Pro <info@paidmembershipspro.com>\n"
+"Language-Team: Paid Memberships Pro <info@paidmembershipspro.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: GlotPress/4.0.1\n"
-"Language: nl\n"
-"Project-Id-Version: Plugins - Paid Memberships Pro &#8211; AWeber Add On - Stable (latest release)\n"
+"POT-Creation-Date: 2024-10-17T14:54:30+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.11.0\n"
+"X-Domain: pmpro-aweber\n"
 
 #: pmpro-aweber.php:822
 msgid "Support"
@@ -32,21 +35,26 @@ msgid "Save Settings"
 msgstr "Instellingen opslaan"
 
 #. Author URI of the plugin
+#: pmpro-aweber.php
 msgid "https://www.paidmembershipspro.com/"
 msgstr "https://www.paidmembershipspro.com/"
 
 #. Author of the plugin
+#: pmpro-aweber.php
 msgid "Paid Memberships Pro"
 msgstr "Paid Memberships Pro"
 
 #. Description of the plugin
+#: pmpro-aweber.php
 msgid "Add users and members to AWeber lists based on their membership level."
 msgstr "Voeg gebruikers en leden toe aan AWeber lijsten op basis van hun lidmaatschapsniveau."
 
 #. Plugin URI of the plugin
+#: pmpro-aweber.php
 msgid "https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/"
 msgstr "https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/"
 
 #. Plugin Name of the plugin
+#: pmpro-aweber.php
 msgid "Paid Memberships Pro - AWeber Add On"
 msgstr "Paid Memberships Pro - AWeber Add On"
