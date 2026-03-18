@@ -1,4 +1,4 @@
-![](pmpro-sample-banner.png)
+![](pmpro-aweber-banner.png)
 
 # [AWeber Integration](https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/) #
 [comment]: # (Generate badges from shields.io, only works for .org plugins to get other stats etc. We'd have to create our own endpoints for Premium plugins)
