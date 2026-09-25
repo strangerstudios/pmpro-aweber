@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 // The following functions are all being replaced by the new pmproaw_pmpro_after_all_membership_level_changes() function.
 
 /**
@@ -55,10 +59,10 @@ function pmproaw_pmpro_after_change_membership_level($level_id, $user_id)
 					global $wpdb;
 					
 					if($level_id)
-						$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1,1");
+						$last_level = $wpdb->get_results( $wpdb->prepare( "SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = %d ORDER BY `id` DESC LIMIT 1,1", $user_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- PMPro custom table.
 					
 					else
-						$last_level = $wpdb->get_results("SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = $user_id ORDER BY `id` DESC LIMIT 1");
+						$last_level = $wpdb->get_results( $wpdb->prepare( "SELECT* FROM $wpdb->pmpro_memberships_users WHERE `user_id` = %d ORDER BY `id` DESC LIMIT 1", $user_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- PMPro custom table.
 		
 					if($last_level)
 					{			
@@ -160,5 +164,5 @@ function pmproaw_wp()
 function pmproaw_pmpro_after_checkout($user_id)
 {
 	_deprecated_function( __FUNCTION__, '1.3.4', 'pmproaw_pmpro_after_all_membership_level_changes' );
-	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);
+	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Runs on pmpro_after_checkout after PMPro core verified the checkout nonce; value is cast with intval().
 }
