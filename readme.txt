@@ -2,8 +2,8 @@
 Contributors: strangerstudios, paidmembershipspro
 Tags: pmpro, paid memberships pro, aweber, email marketing
 Requires at least: 5.2
-Tested up to: 6.5
-Stable tag: 1.4
+Tested up to: 7.1
+Stable tag: 1.4.1
 
 Add users and members to AWeber lists based on their membership level.
 
@@ -51,6 +51,9 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 2. Membership-level specific list subscription settings.
 
 == Changelog ==
+= 1.4.1 - 2026-09-25 =
+* SECURITY: AWeber API requests now verify AWeber's SSL certificate. #43 (@dparker1005)
+
 = 1.4 - 2024-10-17 =
 * FEATURE: Now updating the plugin from paidmembershipspro.com.
 * ENHANCEMENT: Updated translation files bundled with the plugin.
