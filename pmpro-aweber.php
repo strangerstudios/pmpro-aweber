@@ -16,6 +16,10 @@ Author URI: https://www.paidmembershipspro.com/
 	These keys are for the PMPro-AWeber App.
 	Your user keys should be entered on the settings page at Settings --> PMPro AWeber in your WP dashboard.
 */
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 define('PMPROAW_APPID', '7f549046');
 
 // Load deprecated.php
@@ -86,7 +90,7 @@ function pmproaw_admin_notices() {
 		return;
 	
 	//don't show on the options page
-	if(!empty($_REQUEST['page']) && $_REQUEST['page'] == 'pmproaw_options')
+	if(!empty($_REQUEST['page']) && $_REQUEST['page'] == 'pmproaw_options') // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check of the current admin page.
 		return;
 		
 	//haven't checked in a while so try to connect
@@ -94,7 +98,7 @@ function pmproaw_admin_notices() {
 	if(empty($account)) {
 	?>
 	<div class="notice notice-error is-dismissible">
-		<p>Error connecting to the AWeber API. <a href="<?php echo admin_url('options-general.php?page=pmproaw_options');?>">Please check your PMPro AWeber settings and reauthorize if necessary.</a></p>
+		<p>Error connecting to the AWeber API. <a href="<?php echo esc_url( admin_url('options-general.php?page=pmproaw_options') );?>">Please check your PMPro AWeber settings and reauthorize if necessary.</a></p>
 	</div>
 	<?php
 	} else {
@@ -537,10 +541,10 @@ function pmproaw_option_users_lists()
 		echo "<select multiple='yes' name=\"pmproaw_options[users_lists][]\">";
 		foreach($pmproaw_lists as $list)
 		{
-			echo "<option value='" . $list['id'] . "' ";
+			echo "<option value='" . esc_attr( $list['id'] ) . "' ";
 			if(in_array($list['id'], $selected_lists))
 				echo "selected='selected'";
-			echo ">" . $list['name'] . "</option>";
+			echo ">" . esc_html( $list['name'] ) . "</option>";
 		}
 		echo "</select>";
 	}
@@ -575,13 +579,13 @@ function pmproaw_option_memberships_lists($level)
 	
 	if(!empty($pmproaw_lists))
 	{
-		echo "<select multiple='yes' name=\"pmproaw_options[level_" . $level->id . "_lists][]\">";
+		echo "<select multiple='yes' name=\"pmproaw_options[level_" . esc_attr( $level->id ) . "_lists][]\">";
 		foreach($pmproaw_lists as $list)
 		{
-			echo "<option value='" . $list['id'] . "' ";
+			echo "<option value='" . esc_attr( $list['id'] ) . "' ";
 			if(in_array($list['id'], $selected_lists))
 				echo "selected='selected'";
-			echo ">" . $list['name'] . "</option>";
+			echo ">" . esc_html( $list['name'] ) . "</option>";
 		}
 		echo "</select>";
 	}
@@ -666,7 +670,7 @@ function pmproaw_init_oauth()
 {	
 	if(is_admin())
 	{
-		if(!empty($_REQUEST['page']) && $_REQUEST['page'] == "pmproaw_options" && !empty($_REQUEST['oauth']))
+		if(!empty($_REQUEST['page']) && $_REQUEST['page'] == "pmproaw_options" && !empty($_REQUEST['oauth'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only redirect to the fixed AWeber authorization URL; no state change.
 		{
 			// Redirect your user to the distributed app authorization URL
 			$authorizationURL = "https://auth.aweber.com/1.0/oauth/authorize_app/" . PMPROAW_APPID;
@@ -680,13 +684,13 @@ add_action("init", "pmproaw_init_oauth");
 //show exception error
 function pmproaw_printAWeberAPIException($exc) {
 	//don't print unless we're on the settings page
-	if(!current_user_can('manage_options') || (is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] != 'pmproaw_options'))
+	if(!current_user_can('manage_options') || (is_admin() && !empty($_REQUEST['page']) && $_REQUEST['page'] != 'pmproaw_options')) // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check of the current admin page.
 		return;
 	
 	print "<div class='notice notice-error'><h3>AWeberAPIException:</h3>";
-	print " <li> Type: $exc->type              <br>";
-	print " <li> Msg : $exc->message           <br>";
-	print " <li> Docs: $exc->documentation_url <br>";
+	print " <li> Type: " . esc_html( $exc->type ) . "              <br>";
+	print " <li> Msg : " . esc_html( $exc->message ) . "           <br>";
+	print " <li> Docs: " . esc_html( $exc->documentation_url ) . " <br>";
 	print "</div>";
 }
 
@@ -773,7 +777,7 @@ function pmproaw_options_page()
 	<h2>PMPro AWeber Integration Options</h2>		
 	
 	<?php if(!empty($msg)) { ?>
-		<div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
+		<div class="message <?php echo esc_attr( $msgt ); ?>"><p><?php echo esc_html( $msg ); ?></p></div>
 	<?php } ?>
 	
 	<form action="options.php" method="post">
