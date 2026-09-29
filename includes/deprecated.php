@@ -164,5 +164,5 @@ function pmproaw_wp()
 function pmproaw_pmpro_after_checkout($user_id)
 {
 	_deprecated_function( __FUNCTION__, '1.3.4', 'pmproaw_pmpro_after_all_membership_level_changes' );
-	pmproaw_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Runs on pmpro_after_checkout after PMPro core verified the checkout nonce; value is cast with intval().
+	pmproaw_pmpro_after_change_membership_level( ! empty( $_REQUEST['level'] ) ? intval( $_REQUEST['level'] ) : 0, $user_id ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Runs on pmpro_after_checkout after PMPro core verified the checkout nonce.
 }
