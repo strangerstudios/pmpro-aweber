@@ -6,6 +6,8 @@ Description: Add users and members to AWeber lists based on their membership lev
 Version: 1.4.2
 Author: Paid Memberships Pro
 Author URI: https://www.paidmembershipspro.com/
+Text Domain: pmpro-aweber
+Domain Path: /languages
 */
 /*
 	Copyright 2011	Stranger Studios	(email : jason@strangerstudios.com)
@@ -24,6 +26,12 @@ define('PMPROAW_APPID', '7f549046');
 
 // Load deprecated.php
 require_once( dirname( __FILE__ ) . '/includes/deprecated.php' );
+
+//load text domain
+function pmproaw_load_textdomain() {
+	load_plugin_textdomain( 'pmpro-aweber', false, basename( dirname( __FILE__ ) ) . '/languages' );
+}
+add_action( 'plugins_loaded', 'pmproaw_load_textdomain' );
 
 //init
 function pmproaw_init()
@@ -98,7 +106,7 @@ function pmproaw_admin_notices() {
 	if(empty($account)) {
 	?>
 	<div class="notice notice-error is-dismissible">
-		<p>Error connecting to the AWeber API. <a href="<?php echo esc_url( admin_url('options-general.php?page=pmproaw_options') );?>">Please check your PMPro AWeber settings and reauthorize if necessary.</a></p>
+		<p><?php esc_html_e( 'Error connecting to the AWeber API.', 'pmpro-aweber' ); ?> <a href="<?php echo esc_url( admin_url('options-general.php?page=pmproaw_options') );?>"><?php esc_html_e( 'Please check your PMPro AWeber settings and reauthorize if necessary.', 'pmpro-aweber' ); ?></a></p>
 	</div>
 	<?php
 	} else {
@@ -330,18 +338,18 @@ function pmproaw_admin_init()
 {
 	// setup settings
 	register_setting('pmproaw_options', 'pmproaw_options', 'pmproaw_options_validate');	
-	add_settings_section('pmproaw_section_general', 'General Settings', 'pmproaw_section_general', 'pmproaw_options');		
-	add_settings_field('pmproaw_option_authorization_code', 'AWeber Authorization Code', 'pmproaw_option_authorization_code', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_consumer_key', 'AWeber Consumer Key', 'pmproaw_option_consumer_key', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_consumer_secret', 'AWeber Consumer Secret', 'pmproaw_option_consumer_secret', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_access_key', 'AWeber Access Key', 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_access_secret', 'AWeber Access Secret', 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
-	add_settings_field('pmproaw_option_users_lists', 'Non-Members Lists', 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
+	add_settings_section('pmproaw_section_general', esc_html__( 'General Settings', 'pmpro-aweber' ), 'pmproaw_section_general', 'pmproaw_options');		
+	add_settings_field('pmproaw_option_authorization_code', esc_html__( 'AWeber Authorization Code', 'pmpro-aweber' ), 'pmproaw_option_authorization_code', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_consumer_key', esc_html__( 'AWeber Consumer Key', 'pmpro-aweber' ), 'pmproaw_option_consumer_key', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_consumer_secret', esc_html__( 'AWeber Consumer Secret', 'pmpro-aweber' ), 'pmproaw_option_consumer_secret', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_access_key', esc_html__( 'AWeber Access Key', 'pmpro-aweber' ), 'pmproaw_option_access_key', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_access_secret', esc_html__( 'AWeber Access Secret', 'pmpro-aweber' ), 'pmproaw_option_access_secret', 'pmproaw_options', 'pmproaw_section_general');		
+	add_settings_field('pmproaw_option_users_lists', esc_html__( 'Non-Members Lists', 'pmpro-aweber' ), 'pmproaw_option_users_lists', 'pmproaw_options', 'pmproaw_section_general');	
 	// add_settings_field('pmproaw_option_double_opt_in', 'Require Double Opt-in?', 'pmproaw_option_double_opt_in', 'pmproaw_options', 'pmproaw_section_general');	
-	add_settings_field('pmproaw_option_unsubscribe', 'Unsubscribe on Level Change?', 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
+	add_settings_field('pmproaw_option_unsubscribe', esc_html__( 'Unsubscribe on Level Change?', 'pmpro-aweber' ), 'pmproaw_option_unsubscribe', 'pmproaw_options', 'pmproaw_section_general');	
 
 	// pmpro-related options	
-	add_settings_section('pmproaw_section_levels', 'Membership Levels and Lists', 'pmproaw_section_levels', 'pmproaw_options');
+	add_settings_section('pmproaw_section_levels', esc_html__( 'Membership Levels and Lists', 'pmpro-aweber' ), 'pmproaw_section_levels', 'pmproaw_options');
 	
 	//add options for levels	
 	$pmproaw_levels = pmproaw_getPMProLevels();
@@ -390,19 +398,25 @@ function pmproaw_section_levels()
 	if(class_exists("MemberOrder"))
 	{
 	?>
-		<p>PMPro is installed.</p>
+		<p><?php esc_html_e( 'PMPro is installed.', 'pmpro-aweber' ); ?></p>
 	<?php
 		//do we have levels?
 		if(empty($pmproaw_levels))
 		{
 		?>
-		<p>Once you've <a href="admin.php?page=pmpro-membershiplevels">created some levels in Paid Memberships Pro</a>, you will be able to assign AWeber lists to them here.</p>
+		<p><?php
+			printf(
+				/* translators: %s: link to the Membership Levels page */
+				esc_html__( 'Once you\'ve %s, you will be able to assign AWeber lists to them here.', 'pmpro-aweber' ),
+				'<a href="admin.php?page=pmpro-membershiplevels">' . esc_html__( 'created some levels in Paid Memberships Pro', 'pmpro-aweber' ) . '</a>'
+			);
+		?></p>
 		<?php
 		}
 		else
 		{
 		?>
-		<p>For each level below, choose the lists which should be subscribed to when a new user registers.</p>
+		<p><?php esc_html_e( 'For each level below, choose the lists which should be subscribed to when a new user registers.', 'pmpro-aweber' ); ?></p>
 		<?php
 		}
 	}
@@ -413,14 +427,26 @@ function pmproaw_section_levels()
 		{
 			//just deactivated
 			?>
-			<p><a href="plugins.php?plugin_status=inactive">Activate Paid Memberships Pro</a> to add membership functionality to your site and finer control over your AWeber lists.</p>
+			<p><?php
+				printf(
+					/* translators: %s: link to activate Paid Memberships Pro */
+					esc_html__( '%s to add membership functionality to your site and finer control over your AWeber lists.', 'pmpro-aweber' ),
+					'<a href="plugins.php?plugin_status=inactive">' . esc_html__( 'Activate Paid Memberships Pro', 'pmpro-aweber' ) . '</a>'
+				);
+			?></p>
 			<?php
 		}
 		else
 		{
 			//needs to be installed
 			?>
-			<p><a href="plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins">Install Paid Memberships Pro</a> to add membership functionality to your site and finer control over your AWeber lists.</p>
+			<p><?php
+				printf(
+					/* translators: %s: link to install Paid Memberships Pro */
+					esc_html__( '%s to add membership functionality to your site and finer control over your AWeber lists.', 'pmpro-aweber' ),
+					'<a href="plugin-install.php?tab=search&type=term&s=paid+memberships+pro&plugin-search-input=Search+Plugins">' . esc_html__( 'Install Paid Memberships Pro', 'pmpro-aweber' ) . '</a>'
+				);
+			?></p>
 			<?php
 		}
 	}
@@ -441,15 +467,15 @@ function pmproaw_option_authorization_code()
 	echo "<textarea name='pmproaw_options[authorization_code]' cols='60' rows='3'>" . esc_textarea($authorization_code) . "</textarea>";	
 	
 	if(empty($authorization_code)){
-		echo "<div class='updated inline'><p>To get started, you must authorize this website to access your AWeber account.<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>Click here to authorize this site to access your AWeber account</a>.<br />Then copy the 'authorization code' given into the field above and click 'Save Settings' to continue.</p></div>";
+		echo "<div class='updated inline'><p>" . esc_html__( 'To get started, you must authorize this website to access your AWeber account.', 'pmpro-aweber' ) . "<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>" . esc_html__( 'Click here to authorize this site to access your AWeber account.', 'pmpro-aweber' ) . "</a><br />" . esc_html__( "Then copy the 'authorization code' given into the field above and click 'Save Settings' to continue.", 'pmpro-aweber' ) . "</p></div>";
 	} elseif(!empty($pmproaw_exception)) {
-		echo "<div class='notice notice-error inline'><p>You must reauthorize the PMPro Aweber App at AWeber.<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>Click here to authorize this site to access your AWeber account</a>.<br />Then copy the new 'authorization code' given and replace it into the field above and click 'Save Settings' to continue.</p></div>";
+		echo "<div class='notice notice-error inline'><p>" . esc_html__( 'You must reauthorize the PMPro AWeber App at AWeber.', 'pmpro-aweber' ) . "<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>" . esc_html__( 'Click here to authorize this site to access your AWeber account.', 'pmpro-aweber' ) . "</a><br />" . esc_html__( "Then copy the new 'authorization code' given and replace it into the field above and click 'Save Settings' to continue.", 'pmpro-aweber' ) . "</p></div>";
 	}
 	
 	//show an extra save settings button sometimes
 	if(empty($authorization_code) || !empty($pmproaw_exception)) {
 	?>
-	<input type="submit" name="submit" class="button-primary" value="Save Settings">
+	<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e( 'Save Settings', 'pmpro-aweber' ); ?>">
 	<?php
 	}
 }
@@ -464,7 +490,7 @@ function pmproaw_option_consumer_key()
 	
 	?>
 	<input id='pmproaw_consumer_key' name='pmproaw_options[consumer_key]' size='80' type='text' value='<?php echo esc_attr($consumer_key); ?>' readonly='readonly'/>
-	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<br /><small><?php esc_html_e( 'This value is automatically generated when the Authorization Code above is set.', 'pmpro-aweber' ); ?></small>
 	<script>
 		//hide this row in the table
 		jQuery('#pmproaw_consumer_key').closest('tr').hide();
@@ -482,7 +508,7 @@ function pmproaw_option_consumer_secret()
 	
 	?>
 	<input id='pmproaw_consumer_secret' name='pmproaw_options[consumer_secret]' size='80' type='text' value='<?php echo esc_attr($consumer_secret); ?>' readonly='readonly'/>
-	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<br /><small><?php esc_html_e( 'This value is automatically generated when the Authorization Code above is set.', 'pmpro-aweber' ); ?></small>
 	<script>
 		//hide this row in the table
 		jQuery('#pmproaw_consumer_secret').closest('tr').hide();
@@ -500,7 +526,7 @@ function pmproaw_option_access_key()
 	
 	?>
 	<input id='pmproaw_access_key' name='pmproaw_options[access_key]' size='80' type='text' value='<?php echo esc_attr($access_key); ?>' readonly='readonly'/>
-	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<br /><small><?php esc_html_e( 'This value is automatically generated when the Authorization Code above is set.', 'pmpro-aweber' ); ?></small>
 	<script>
 		//hide this row in the table
 		jQuery('#pmproaw_access_key').closest('tr').hide();
@@ -518,7 +544,7 @@ function pmproaw_option_access_secret()
 	
 	?>
 	<input id='pmproaw_access_secret' name='pmproaw_options[access_secret]' size='80' type='text' value='<?php echo esc_attr($access_secret); ?>' readonly='readonly'/>
-	<br /><small>This value is automatically generated when the Authorization Code above is set.</small>
+	<br /><small><?php esc_html_e( 'This value is automatically generated when the Authorization Code above is set.', 'pmpro-aweber' ); ?></small>
 	<script>
 		//hide this row in the table
 		jQuery('#pmproaw_access_secret').closest('tr').hide();
@@ -550,7 +576,7 @@ function pmproaw_option_users_lists()
 	}
 	else
 	{
-		echo "No lists found.";
+		esc_html_e( 'No lists found.', 'pmpro-aweber' );
 	}	
 }
 
@@ -559,8 +585,8 @@ function pmproaw_option_double_opt_in()
 	$options = get_option('pmproaw_options');	
 	?>
 	<select name="pmproaw_options[double_opt_in]">
-		<option value="0" <?php selected($options['double_opt_in'], 0);?>>No</option>
-		<option value="1" <?php selected($options['double_opt_in'], 1);?>>Yes</option>		
+		<option value="0" <?php selected($options['double_opt_in'], 0);?>><?php esc_html_e( 'No', 'pmpro-aweber' ); ?></option>
+		<option value="1" <?php selected($options['double_opt_in'], 1);?>><?php esc_html_e( 'Yes', 'pmpro-aweber' ); ?></option>		
 	</select>
 	<?php
 }
@@ -591,7 +617,7 @@ function pmproaw_option_memberships_lists($level)
 	}
 	else
 	{
-		echo "No lists found.";
+		esc_html_e( 'No lists found.', 'pmpro-aweber' );
 	}	
 }
 
@@ -661,7 +687,7 @@ function pmproaw_options_validate($input)
 // add the admin options page	
 function pmproaw_admin_add_page() 
 {
-	add_options_page('PMPro AWeber Options', 'PMPro AWeber', 'manage_options', 'pmproaw_options', 'pmproaw_options_page');
+	add_options_page( esc_html__( 'PMPro AWeber Options', 'pmpro-aweber' ), esc_html__( 'PMPro AWeber', 'pmpro-aweber' ), 'manage_options', 'pmproaw_options', 'pmproaw_options_page');
 }
 add_action('admin_menu', 'pmproaw_admin_add_page');
 
@@ -774,7 +800,7 @@ function pmproaw_options_page()
 ?>
 <div class="wrap">
 	<div id="icon-options-general" class="icon32"><br></div>
-	<h2>PMPro AWeber Integration Options</h2>		
+	<h2><?php esc_html_e( 'PMPro AWeber Integration Options', 'pmpro-aweber' ); ?></h2>		
 	
 	<?php if(!empty($msg)) { ?>
 		<div class="message <?php echo esc_attr( $msgt ); ?>"><p><?php echo esc_html( $msg ); ?></p></div>
@@ -782,9 +808,15 @@ function pmproaw_options_page()
 	
 	<form action="options.php" method="post">
 		
-		<p>This plugin will integrate your site with AWeber. You can choose one or more AWeber lists to have users subscribed to when they signup for your site.</p>
-		<p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can also choose one or more AWeber lists to have members subscribed to for each membership level.</p>
-		<p>Don't have a AWeber account? <a href="http://www.aweber.com/?422729" target="_blank">Get one here</a>.</p>
+		<p><?php esc_html_e( 'This plugin will integrate your site with AWeber. You can choose one or more AWeber lists to have users subscribed to when they signup for your site.', 'pmpro-aweber' ); ?></p>
+		<p><?php
+			printf(
+				/* translators: %s: link to Paid Memberships Pro */
+				esc_html__( 'If you have %s installed, you can also choose one or more AWeber lists to have members subscribed to for each membership level.', 'pmpro-aweber' ),
+				'<a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a>'
+			);
+		?></p>
+		<p><?php esc_html_e( "Don't have an AWeber account?", 'pmpro-aweber' ); ?> <a href="http://www.aweber.com/?422729" target="_blank"><?php esc_html_e( 'Get one here.', 'pmpro-aweber' ); ?></a></p>
 		
 		<?php			
 			settings_fields('pmproaw_options');
@@ -795,7 +827,7 @@ function pmproaw_options_page()
 						
 		<div class="bottom-buttons">
 			<input type="hidden" name="pmprot_options[set]" value="1" />
-			<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e('Save Settings'); ?>">				
+			<input type="submit" name="submit" class="button-primary" value="<?php esc_attr_e( 'Save Settings', 'pmpro-aweber' ); ?>">				
 		</div>
 		
 	</form>
@@ -809,7 +841,7 @@ Function to add links to the plugin action links
 function pmproaw_add_action_links($links) {
 	
 	$new_links = array(
-			'<a href="' . get_admin_url(NULL, 'options-general.php?page=pmproaw_options') . '">Settings</a>',
+			'<a href="' . esc_url( get_admin_url(NULL, 'options-general.php?page=pmproaw_options') ) . '">' . esc_html__( 'Settings', 'pmpro-aweber' ) . '</a>',
 	);
 	return array_merge($new_links, $links);
 }
@@ -822,8 +854,8 @@ function pmproaw_plugin_row_meta($links, $file) {
 	if(strpos($file, 'pmpro-aweber.php') !== false)
 	{
 		$new_links = array(
-			'<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/') . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
-			'<a href="' . esc_url('https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/pmpro-aweber-integration/') . '" title="' . esc_attr__( 'View Documentation', 'pmpro-aweber' ) . '">' . esc_html__( 'Docs', 'pmpro-aweber' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr__( 'Visit Customer Support Forum', 'pmpro-aweber' ) . '">' . esc_html__( 'Support', 'pmpro-aweber' ) . '</a>',
 		);
 		$links = array_merge($links, $new_links);
 	}
@@ -836,10 +868,10 @@ function pmproaw_option_unsubscribe()
 	$options = get_option('pmproaw_options');	
 	?>
 	<select name="pmproaw_options[unsubscribe]">
-		<option value="0" <?php selected($options['unsubscribe'], 0);?>>No</option>
-		<option value="1" <?php selected($options['unsubscribe'], 1);?>>Yes (Only old level lists.)</option>
-		<option value="all" <?php selected($options['unsubscribe'], "all");?>>Yes (All other lists.)</option>
+		<option value="0" <?php selected($options['unsubscribe'], 0);?>><?php esc_html_e( 'No', 'pmpro-aweber' ); ?></option>
+		<option value="1" <?php selected($options['unsubscribe'], 1);?>><?php esc_html_e( 'Yes (Only old level lists.)', 'pmpro-aweber' ); ?></option>
+		<option value="all" <?php selected($options['unsubscribe'], "all");?>><?php esc_html_e( 'Yes (All other lists.)', 'pmpro-aweber' ); ?></option>
 	</select>
-	<small>Recommended: Yes. However, if you manage multiple lists in Aweber and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.</small>
+	<small><?php esc_html_e( "Recommended: Yes. However, if you manage multiple lists in AWeber and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-aweber' ); ?></small>
 	<?php
 }
