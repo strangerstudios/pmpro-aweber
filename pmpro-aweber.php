@@ -467,9 +467,9 @@ function pmproaw_option_authorization_code()
 	echo "<textarea name='pmproaw_options[authorization_code]' cols='60' rows='3'>" . esc_textarea($authorization_code) . "</textarea>";	
 	
 	if(empty($authorization_code)){
-		echo "<div class='updated inline'><p>" . esc_html__( 'To get started, you must authorize this website to access your AWeber account.', 'pmpro-aweber' ) . "<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>" . esc_html__( 'Click here to authorize this site to access your AWeber account', 'pmpro-aweber' ) . "</a>.<br />" . esc_html__( "Then copy the 'authorization code' given into the field above and click 'Save Settings' to continue.", 'pmpro-aweber' ) . "</p></div>";
+		echo "<div class='updated inline'><p>" . esc_html__( 'To get started, you must authorize this website to access your AWeber account.', 'pmpro-aweber' ) . "<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>" . esc_html__( 'Click here to authorize this site to access your AWeber account.', 'pmpro-aweber' ) . "</a><br />" . esc_html__( "Then copy the 'authorization code' given into the field above and click 'Save Settings' to continue.", 'pmpro-aweber' ) . "</p></div>";
 	} elseif(!empty($pmproaw_exception)) {
-		echo "<div class='notice notice-error inline'><p>" . esc_html__( 'You must reauthorize the PMPro Aweber App at AWeber.', 'pmpro-aweber' ) . "<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>" . esc_html__( 'Click here to authorize this site to access your AWeber account', 'pmpro-aweber' ) . "</a>.<br />" . esc_html__( "Then copy the new 'authorization code' given and replace it into the field above and click 'Save Settings' to continue.", 'pmpro-aweber' ) . "</p></div>";
+		echo "<div class='notice notice-error inline'><p>" . esc_html__( 'You must reauthorize the PMPro AWeber App at AWeber.', 'pmpro-aweber' ) . "<br /><a target='_blank' href='?page=pmproaw_options&oauth=1'>" . esc_html__( 'Click here to authorize this site to access your AWeber account.', 'pmpro-aweber' ) . "</a><br />" . esc_html__( "Then copy the new 'authorization code' given and replace it into the field above and click 'Save Settings' to continue.", 'pmpro-aweber' ) . "</p></div>";
 	}
 	
 	//show an extra save settings button sometimes
@@ -816,7 +816,7 @@ function pmproaw_options_page()
 				'<a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a>'
 			);
 		?></p>
-		<p><?php esc_html_e( "Don't have a AWeber account?", 'pmpro-aweber' ); ?> <a href="http://www.aweber.com/?422729" target="_blank"><?php esc_html_e( 'Get one here', 'pmpro-aweber' ); ?></a>.</p>
+		<p><?php esc_html_e( "Don't have an AWeber account?", 'pmpro-aweber' ); ?> <a href="http://www.aweber.com/?422729" target="_blank"><?php esc_html_e( 'Get one here.', 'pmpro-aweber' ); ?></a></p>
 		
 		<?php			
 			settings_fields('pmproaw_options');
@@ -841,7 +841,7 @@ Function to add links to the plugin action links
 function pmproaw_add_action_links($links) {
 	
 	$new_links = array(
-			'<a href="' . get_admin_url(NULL, 'options-general.php?page=pmproaw_options') . '">' . esc_html__( 'Settings', 'pmpro-aweber' ) . '</a>',
+			'<a href="' . esc_url( get_admin_url(NULL, 'options-general.php?page=pmproaw_options') ) . '">' . esc_html__( 'Settings', 'pmpro-aweber' ) . '</a>',
 	);
 	return array_merge($new_links, $links);
 }
@@ -872,6 +872,6 @@ function pmproaw_option_unsubscribe()
 		<option value="1" <?php selected($options['unsubscribe'], 1);?>><?php esc_html_e( 'Yes (Only old level lists.)', 'pmpro-aweber' ); ?></option>
 		<option value="all" <?php selected($options['unsubscribe'], "all");?>><?php esc_html_e( 'Yes (All other lists.)', 'pmpro-aweber' ); ?></option>
 	</select>
-	<small><?php esc_html_e( "Recommended: Yes. However, if you manage multiple lists in Aweber and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-aweber' ); ?></small>
+	<small><?php esc_html_e( "Recommended: Yes. However, if you manage multiple lists in AWeber and have users subscribe outside of WordPress, you may want to choose No so contacts aren't unsubscribed from other lists when they register on your site.", 'pmpro-aweber' ); ?></small>
 	<?php
 }
