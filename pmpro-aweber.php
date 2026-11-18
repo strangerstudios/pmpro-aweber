@@ -119,11 +119,6 @@ add_action('admin_notices', 'pmproaw_admin_notices');
 //subscribe users when they register
 function pmproaw_user_register($user_id)
 {
-	// Skip at checkout. Members get their level lists from pmproaw_pmpro_after_all_membership_level_changes() instead.
-	if ( function_exists( 'pmpro_is_checkout' ) && pmpro_is_checkout() ) {
-		return;
-	}
-
 	clean_user_cache($user_id);
 	
 	$options = get_option("pmproaw_options");
