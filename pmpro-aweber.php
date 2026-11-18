@@ -119,6 +119,11 @@ add_action('admin_notices', 'pmproaw_admin_notices');
 //subscribe users when they register
 function pmproaw_user_register($user_id)
 {
+	// Skip at checkout. Members get their level lists from pmproaw_pmpro_after_all_membership_level_changes() instead.
+	if ( function_exists( 'pmpro_is_checkout' ) && pmpro_is_checkout() ) {
+		return;
+	}
+
 	clean_user_cache($user_id);
 	
 	$options = get_option("pmproaw_options");
@@ -130,15 +135,14 @@ function pmproaw_user_register($user_id)
 		$list_user = get_userdata($user_id);
 		
 		//subscribe to each list
-		try {
-
-			foreach($options['users_lists'] as $list_id)
-			{	
-				pmproaw_subscribe($list_id, $list_user);				
+		foreach($options['users_lists'] as $list_id)
+		{
+			try {
+				pmproaw_subscribe($list_id, $list_user);
 			}
-		}
-		catch(AWeberAPIException $exc) {
-			//just catching errors so users don't see them			
+			catch(AWeberAPIException $exc) {
+				//just catching errors so users don't see them
+			}
 		}
 	}
 }
