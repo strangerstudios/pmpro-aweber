@@ -117,6 +117,7 @@ function pmproaw_admin_notices() {
 add_action('admin_notices', 'pmproaw_admin_notices');
 
 //subscribe users when they register
+//runs at checkout too: PMPro creates the user before payment, so failed checkouts stay on the non-member lists
 function pmproaw_user_register($user_id)
 {
 	clean_user_cache($user_id);
