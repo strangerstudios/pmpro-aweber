@@ -635,7 +635,8 @@ function pmproaw_options_validate($input)
 	$newinput['access_secret'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['access_secret']));
 
 	//clear access key and secret if authorization code was updated
-	if($options['authorization_code'] != $newinput['authorization_code']) {		
+	$old_authorization_code = isset( $options['authorization_code'] ) ? $options['authorization_code'] : '';
+	if($old_authorization_code != $newinput['authorization_code']) {		
 		$newinput['consumer_key'] = '';
 		$newinput['consumer_secret'] = '';
 		$newinput['access_key'] = '';
@@ -653,7 +654,9 @@ function pmproaw_options_validate($input)
 	//user lists	
 	if( $reauthorizing ) {
 		//no lists, probably needs to authenticate, keep old settings
-		$newinput['users_lists'] = $options['users_lists'];
+		if ( isset( $options['users_lists'] ) ) {
+			$newinput['users_lists'] = $options['users_lists'];
+		}
 	} else {
 		//grab data from input
 		if(!empty($input['users_lists']) && is_array($input['users_lists']))
@@ -669,7 +672,9 @@ function pmproaw_options_validate($input)
 		foreach($pmproaw_levels as $level) {
 			if( $reauthorizing ) {
 				//no lists, probably needs to authenticate, keep old settings
-				$newinput['level_' . $level->id . '_lists'] = $options['level_' . $level->id . '_lists'];
+				if ( isset( $options['level_' . $level->id . '_lists'] ) ) {
+					$newinput['level_' . $level->id . '_lists'] = $options['level_' . $level->id . '_lists'];
+				}
 			} else {
 				//grab data from input
 				if(!empty($input['level_' . $level->id . '_lists']) && is_array($input['level_' . $level->id . '_lists'])) {
