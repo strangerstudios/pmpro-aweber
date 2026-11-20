@@ -299,8 +299,17 @@ function pmproaw_profile_update($user_id, $old_user_data)
 	{			
 		try {
 			//get all lists
-			$pmproaw_lists = $account->lists->data['entries'];
-		
+			if($account->lists->data['total_size'] > 99) {
+				//need to grab lists this way to get > 100
+				$pmproaw_lists = array();
+				foreach($account->lists as $somelist) {
+					$pmproaw_lists[] = $somelist->data;
+				}
+			} else {
+				//just get the entries array which has first 100
+				$pmproaw_lists = $account->lists->data['entries'];
+			}
+
 			if(!empty($pmproaw_lists))
 			{
 				foreach($pmproaw_lists as $list)
